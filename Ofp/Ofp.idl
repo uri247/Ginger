@@ -1,0 +1,39 @@
+// Ofp.idl : IDL source for Ofp
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (Ofp.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+[
+	object,
+	uuid(04F7E79F-D1D2-4E8A-BB41-C15FEA205499),
+	dual,
+	nonextensible,
+	pointer_default(unique)
+]
+interface IPlug : IDispatch{
+};
+
+
+
+[
+	uuid(589095CC-F236-4051-99C3-AD56011EA33E),
+	version(1.0),
+]
+library OfpLib
+{
+	importlib("stdole2.tlb");
+
+
+	[
+		uuid(4ED5C4E4-A65F-49B3-919B-4DCA5C43F946)		
+	]
+	coclass Plug
+	{
+		[default] interface IPlug;
+	};
+};
+

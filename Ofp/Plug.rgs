@@ -1,0 +1,53 @@
+HKCR
+{
+	Ginger.Ofp.1 = s 'Plug Class'
+	{
+		CLSID = s '{4ED5C4E4-A65F-49B3-919B-4DCA5C43F946}'
+	}
+	Ginger.Ofp = s 'Plug Class'
+	{		
+		CurVer = s 'Ginger.Ofp.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {4ED5C4E4-A65F-49B3-919B-4DCA5C43F946} = s 'Plug Class'
+		{
+			ProgID = s 'Ginger.Ofp.1'
+			VersionIndependentProgID = s 'Ginger.Ofp'
+			ForceRemove Programmable
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			TypeLib = s '{589095CC-F236-4051-99C3-AD56011EA33E}'
+			Version = s '1.0'
+		}
+	}
+}
+
+
+
+HKLM
+{
+    NoRemove Software
+    {
+        NoRemove Microsoft
+        {
+            NoRemove Office
+            {
+                NoRemove 'Word'
+                {
+                    NoRemove Addins
+                    {
+                        ForceRemove 'Ginger.Ofp'
+                        {
+                            val Description = s 'Ginger Office Plug for Proofs of Concepts'
+                            val FriendlyName = s 'Ginger Office Plug'
+                            val LoadBehavior = d '3'
+                        }
+                    }
+                }                
+            }
+        }
+    }
+}      
