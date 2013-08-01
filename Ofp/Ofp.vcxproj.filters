@@ -19,6 +19,7 @@
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="Plug.cpp" />
     <ClCompile Include="wndtools.cpp" />
+    <ClCompile Include="Subcls.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ofp_i.h">
@@ -29,6 +30,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="Plug.h" />
     <ClInclude Include="wndtools.h" />
+    <ClInclude Include="Subcls.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Ofp.rc">

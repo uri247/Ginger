@@ -30,11 +30,10 @@ public:
 		COM_INTERFACE_ENTRY(IPlug)
 		COM_INTERFACE_ENTRY2(IDispatch, IPlug)
 	END_COM_MAP()
-    BEGIN_SINK_MAP(CPlug)
+	BEGIN_SINK_MAP(CPlug)
         SINK_ENTRY_INFO(1, __uuidof(word::ApplicationEvents4), 0x00000004, OnDocumentOpen, &FuncInfo_DocumentOpen )
 		SINK_ENTRY_INFO(1, __uuidof(word::ApplicationEvents4), 0x00000009, OnNewDocument, &FuncInfo_NewDocument )
     END_SINK_MAP()
-
 
 public:
 	CPlug();
@@ -62,6 +61,9 @@ private:
 private:
 	void highlight();
 	void doHighlight(HWND hwnd);
+	void subclassAllWindows( );
+	void subclassDocWindows( word::_Document* ifDoc );
+
 
 
 private:

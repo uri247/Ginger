@@ -60,6 +60,7 @@ STDMETHODIMP CPlug::OnAddInsUpdate( SAFEARRAY** custom )
 STDMETHODIMP CPlug::OnStartupComplete( SAFEARRAY** custom )
 {
     UNREFERENCED_PARAMETER( custom );
+	subclassAllWindows( );
     return S_OK;
 }
 
@@ -117,45 +118,11 @@ void CPlug::highlight( )
 	HRESULT hr = S_OK;
 	CComPtr<word::_Application> ifWord;
 	CComPtr<word::_Document> ifDoc;
-	CComPtr<word::Windows> ifWindows;
-	CComPtr<word::Window> ifWindow;
-	long numWindows;
-	CComBSTR name;
-	HWND hwndTop;
-	HWND hwnd;
 
 	hr = m_dispApplication.QueryInterface( &ifWord );
 	hr = ifWord->get_ActiveDocument( &ifDoc );
-	hr = ifDoc->get_Windows( &ifWindows );
 
-	hr = ifDoc->get_Name( &name );
-
-	hr = ifWindows->get_Count( &numWindows );
-	ATLTRACE( "There are currently %d windows for current document" );
-
-	CComVariant ndxVar((long)0);
-	hr = ifWindows->Item( &ndxVar, &ifWindow );
-
-	// Find top window with title
-	std::wstring title(name);
-	title += L" - Microsoft Word";
-	hwndTop = findWindow( [title](HWND hwnd) -> bool {
-		wchar_t ttl[200];
-		GetWindowText( hwnd, ttl, _countof(ttl) );
-		ATLTRACE( "window: %ls\n", ttl );
-		return title == ttl;
-	});
-
-
-	// Find the child window
-	hwnd = findChildWindow( hwndTop, [](HWND hwnd) -> bool {
-		wchar_t ttl[200];
-		GetWindowText( hwnd, ttl, _countof(ttl) );
-		ATLTRACE( "child window: %ls\n", ttl );
-		return !wcscmp( ttl, L"Microsoft Word Document" );
-	});
-
-	doHighlight(hwnd);
+	subclassDocWindows( ifDoc );
 }
 
 
@@ -173,3 +140,68 @@ void CPlug::doHighlight( HWND hwnd )
 	EndPaint( hwnd, &ps );
 }
 
+
+void CPlug::subclassAllWindows( )
+{
+	HRESULT hr = S_OK;
+	CComPtr<word::_Application> ifWord;
+	CComPtr<word::_Document> ifDoc;
+	CComPtr<word::Documents> ifDocs;
+	long numDocs;
+	HWND hwndTop;
+	HWND hwnd;
+
+	hr = m_dispApplication.QueryInterface( &ifWord );
+	hr = ifWord->get_Documents( &ifDocs );
+
+	ifDocs->get_Count( &numDocs );
+	for( long i=0; i<numDocs; ++i ) {
+		CComVariant varNdx(i);
+		CComPtr<word::_Document> ifDoc;
+		hr = ifDocs->Item( &varNdx, &ifDoc );
+		subclassDocWindows( ifDoc );
+	}
+}
+
+void CPlug::subclassDocWindows( word::_Document* ifDoc )
+{
+	HWND hwndTop;
+	HWND hwnd;
+	CComBSTR name;
+	HRESULT hr;
+	long numWindows;
+
+	// Verify we have only one window for the document (TODO: handle that case later)
+	CComPtr<word::Windows> ifWindows;
+	hr = ifDoc->get_Windows( &ifWindows );
+
+	hr = ifWindows->get_Count( &numWindows );
+	ATLTRACE( "There are currently %d windows for current document", numWindows );
+
+	CComPtr<word::Window> ifWindow;
+	CComVariant varNdx = ( (long)0 );
+	hr = ifWindows->Item( &varNdx, &ifWindow );
+
+
+	// get name of current document
+	hr = ifDoc->get_Name( &name );
+
+	// Find top window with title
+	std::wstring title(name);
+	title += L" - Microsoft Word";
+	hwndTop = findWindow( [title](HWND hwnd) -> bool {
+		wchar_t ttl[200];
+		GetWindowText( hwnd, ttl, _countof(ttl) );
+		ATLTRACE( "window: %ls\n", ttl );
+		return title == ttl;
+	});
+
+	// Find the child window
+	hwnd = findChildWindow( hwndTop, [](HWND hwnd) -> bool {
+		wchar_t ttl[200];
+		GetWindowText( hwnd, ttl, _countof(ttl) );
+		ATLTRACE( "child window: %ls\n", ttl );
+		return !wcscmp( ttl, L"Microsoft Word Document" );
+	});
+
+}
