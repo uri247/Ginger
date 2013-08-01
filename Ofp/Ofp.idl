@@ -15,6 +15,7 @@ import "ocidl.idl";
 	pointer_default(unique)
 ]
 interface IPlug : IDispatch{
+    [id(1)] HRESULT Smile( [in] IDispatch* ifRibbonCtrl );
 };
 
 

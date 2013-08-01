@@ -23,10 +23,17 @@
 
 // Office
 #undef ExitWindows
+/*
 #import <msaddndr.tlb> raw_interfaces_only raw_native_types rename_namespace("addin")
 #import <mso.tlb> raw_interfaces_only raw_native_types rename_namespace("mso") rename("RGB","mso_RGB")
 #import <word.tlb> raw_interfaces_only raw_native_types rename_namespace("word")
 #import <excel.tlb> raw_interfaces_only raw_native_types rename_namespace("excel") rename("RGB","excel_RGB") rename("CopyFile","excel_CopyFile") rename("DialogBox","excel_DialogBox") exclude("IFont","IPicture")
+*/
+#include <msaddndr.tlh>
+#include <mso.tlh>
+#include <word.tlh>
+
+
 
 // Detour
 #include <detours.h>

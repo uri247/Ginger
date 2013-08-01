@@ -7,3 +7,4 @@ public :
 };
 
 extern class COfpModule _AtlModule;
+

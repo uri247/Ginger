@@ -41,10 +41,6 @@ public:
 	HRESULT FinalConstruct();
 	void FinalRelease();
 
-private:
-	HRESULT STDMETHODCALLTYPE OnDocumentOpen( word::_Document* ifDoc );
-	HRESULT STDMETHODCALLTYPE OnNewDocument( word::_Document* ifDoc );
-
 public:
     // addin::IDTExtensibility2
     STDMETHOD(OnConnection)( IDispatch *dispApplication, addin::ext_ConnectMode connectMode, IDispatch* dispAddIn, SAFEARRAY** custom );
@@ -56,8 +52,21 @@ public:
     // mso::IRibbonExtensibility
     STDMETHOD(GetCustomUI)( BSTR RibbonID, BSTR* RibbonXml );
 
+	// IPlug
+    STDMETHOD(Smile)( IDispatch* ifRibbonCtrl );
+
+private:
+	HRESULT STDMETHODCALLTYPE OnDocumentOpen( word::_Document* ifDoc );
+	HRESULT STDMETHODCALLTYPE OnNewDocument( word::_Document* ifDoc );
+
+private:
+	void highlight();
+	void doHighlight(HWND hwnd);
 
 
+private:
+	CComPtr<IDispatch> m_dispApplication;
 };
+
 
 OBJECT_ENTRY_AUTO(__uuidof(Plug), CPlug)

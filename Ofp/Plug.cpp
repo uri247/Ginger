@@ -2,8 +2,7 @@
 
 #include "stdafx.h"
 #include "Plug.h"
-
-
+#include "wndtools.h"
 
 _ATL_FUNC_INFO FuncInfo_DocumentOpen = { CC_STDCALL, VT_EMPTY, 1, { VT_BYREF|VT_USERDEFINED }   };
 _ATL_FUNC_INFO FuncInfo_NewDocument = { CC_STDCALL, VT_EMPTY, 1, { VT_BYREF|VT_USERDEFINED }   };
@@ -35,6 +34,8 @@ STDMETHODIMP CPlug::OnConnection( IDispatch *dispApplication, addin::ext_Connect
 	if( SUCCEEDED(hr) ) {
 	    hr = dispApplication->QueryInterface( &ifWord );
 	}
+
+	m_dispApplication = dispApplication;
 
 	if( SUCCEEDED(hr) ) {
 		hr = EventImpl_Word::DispEventAdvise( dispApplication );
@@ -101,5 +102,74 @@ STDMETHODIMP CPlug::OnNewDocument ( word::_Document* ifDoc )
 
 
 
+STDMETHODIMP CPlug::Smile( IDispatch* dispRibbonCtrl )
+{
+    HRESULT hr;
+    CComPtr<mso::IRibbonControl> ifRibbonCtrl;
+    hr = dispRibbonCtrl->QueryInterface( &ifRibbonCtrl );
+    highlight();
+    return hr;
+}
 
+
+void CPlug::highlight( )
+{
+	HRESULT hr = S_OK;
+	CComPtr<word::_Application> ifWord;
+	CComPtr<word::_Document> ifDoc;
+	CComPtr<word::Windows> ifWindows;
+	CComPtr<word::Window> ifWindow;
+	long numWindows;
+	CComBSTR name;
+	HWND hwndTop;
+	HWND hwnd;
+
+	hr = m_dispApplication.QueryInterface( &ifWord );
+	hr = ifWord->get_ActiveDocument( &ifDoc );
+	hr = ifDoc->get_Windows( &ifWindows );
+
+	hr = ifDoc->get_Name( &name );
+
+	hr = ifWindows->get_Count( &numWindows );
+	ATLTRACE( "There are currently %d windows for current document" );
+
+	CComVariant ndxVar((long)0);
+	hr = ifWindows->Item( &ndxVar, &ifWindow );
+
+	// Find top window with title
+	std::wstring title(name);
+	title += L" - Microsoft Word";
+	hwndTop = findWindow( [title](HWND hwnd) -> bool {
+		wchar_t ttl[200];
+		GetWindowText( hwnd, ttl, _countof(ttl) );
+		ATLTRACE( "window: %ls\n", ttl );
+		return title == ttl;
+	});
+
+
+	// Find the child window
+	hwnd = findChildWindow( hwndTop, [](HWND hwnd) -> bool {
+		wchar_t ttl[200];
+		GetWindowText( hwnd, ttl, _countof(ttl) );
+		ATLTRACE( "child window: %ls\n", ttl );
+		return !wcscmp( ttl, L"Microsoft Word Document" );
+	});
+
+	doHighlight(hwnd);
+}
+
+
+void CPlug::doHighlight( HWND hwnd )
+{
+	HDC hdc;
+	RECT rect;
+	PAINTSTRUCT ps;
+
+	GetClientRect( hwnd, &rect );
+
+	hdc = BeginPaint( hwnd, &ps );
+	MoveToEx( hdc, 0, 0, NULL );
+	LineTo( hdc, 50, 50 );
+	EndPaint( hwnd, &ps );
+}
 
