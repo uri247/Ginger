@@ -5,6 +5,7 @@ using namespace ATL;
 
 class CPlug;
 extern _ATL_FUNC_INFO FuncInfo_DocumentOpen;
+extern _ATL_FUNC_INFO FuncInfo_NewDocument;
 
 
 typedef IDispEventSimpleImpl<1, CPlug, &__uuidof(word::ApplicationEvents4)> EventImpl_Word;
@@ -31,6 +32,7 @@ public:
 	END_COM_MAP()
     BEGIN_SINK_MAP(CPlug)
         SINK_ENTRY_INFO(1, __uuidof(word::ApplicationEvents4), 0x00000004, OnDocumentOpen, &FuncInfo_DocumentOpen )
+		SINK_ENTRY_INFO(1, __uuidof(word::ApplicationEvents4), 0x00000009, OnNewDocument, &FuncInfo_NewDocument )
     END_SINK_MAP()
 
 
@@ -41,6 +43,7 @@ public:
 
 private:
 	HRESULT STDMETHODCALLTYPE OnDocumentOpen( word::_Document* ifDoc );
+	HRESULT STDMETHODCALLTYPE OnNewDocument( word::_Document* ifDoc );
 
 public:
     // addin::IDTExtensibility2

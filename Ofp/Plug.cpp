@@ -6,6 +6,7 @@
 
 
 _ATL_FUNC_INFO FuncInfo_DocumentOpen = { CC_STDCALL, VT_EMPTY, 1, { VT_BYREF|VT_USERDEFINED }   };
+_ATL_FUNC_INFO FuncInfo_NewDocument = { CC_STDCALL, VT_EMPTY, 1, { VT_BYREF|VT_USERDEFINED }   };
 
 
 CPlug::CPlug() 
@@ -93,6 +94,10 @@ STDMETHODIMP CPlug::OnDocumentOpen( word::_Document* ifDoc )
     return S_OK;
 }
 
+STDMETHODIMP CPlug::OnNewDocument ( word::_Document* ifDoc )
+{
+	return S_OK;
+}
 
 
 
