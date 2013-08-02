@@ -60,7 +60,7 @@ STDMETHODIMP CPlug::OnAddInsUpdate( SAFEARRAY** custom )
 STDMETHODIMP CPlug::OnStartupComplete( SAFEARRAY** custom )
 {
     UNREFERENCED_PARAMETER( custom );
-	subclassAllWindows( );
+	//subclassAllWindows( );
     return S_OK;
 }
 
@@ -108,6 +108,7 @@ STDMETHODIMP CPlug::Smile( IDispatch* dispRibbonCtrl )
     HRESULT hr;
     CComPtr<mso::IRibbonControl> ifRibbonCtrl;
     hr = dispRibbonCtrl->QueryInterface( &ifRibbonCtrl );
+
     highlight();
     return hr;
 }
@@ -133,11 +134,12 @@ void CPlug::doHighlight( HWND hwnd )
 	PAINTSTRUCT ps;
 
 	GetClientRect( hwnd, &rect );
-
-	hdc = BeginPaint( hwnd, &ps );
+	//hdc = BeginPaint( hwnd, &ps );
+	hdc = GetDC( hwnd );
 	MoveToEx( hdc, 0, 0, NULL );
 	LineTo( hdc, 50, 50 );
-	EndPaint( hwnd, &ps );
+	ReleaseDC( hwnd, hdc );
+	//EndPaint( hwnd, &ps );
 }
 
 
@@ -203,5 +205,8 @@ void CPlug::subclassDocWindows( word::_Document* ifDoc )
 		ATLTRACE( "child window: %ls\n", ttl );
 		return !wcscmp( ttl, L"Microsoft Word Document" );
 	});
+
+	// now, highlight
+	doHighlight(hwnd);
 
 }

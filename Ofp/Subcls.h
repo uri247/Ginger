@@ -14,9 +14,11 @@ public:
 public:
     BEGIN_MSG_MAP(CSubclsWnd)
         MESSAGE_HANDLER( WM_CREATE, onCreate )
+
     END_MSG_MAP()
 
 private:
     LRESULT onCreate( UINT msg, WPARAM wparam, LPARAM lparam, BOOL& fhandled );
+	LRESULT onPaint( UINT msg, WPARAM wparam, LPARAM lparam, BOOL& fhandled );
 
 };
