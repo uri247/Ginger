@@ -1,8 +1,7 @@
-// Plug.cpp : Implementation of CPlug
-
 #include "stdafx.h"
 #include "Plug.h"
 #include "wndtools.h"
+#include "Subcls.h"
 
 _ATL_FUNC_INFO FuncInfo_DocumentOpen = { CC_STDCALL, VT_EMPTY, 1, { VT_BYREF|VT_USERDEFINED }   };
 _ATL_FUNC_INFO FuncInfo_NewDocument = { CC_STDCALL, VT_EMPTY, 1, { VT_BYREF|VT_USERDEFINED }   };
@@ -206,7 +205,6 @@ void CPlug::subclassDocWindows( word::_Document* ifDoc )
 		return !wcscmp( ttl, L"Microsoft Word Document" );
 	});
 
-	// now, highlight
-	doHighlight(hwnd);
-
+	CSubclsWnd* pSubclsWnd = new CSubclsWnd();
+	pSubclsWnd->SubclassWindow( hwnd );
 }

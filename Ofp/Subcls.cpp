@@ -15,10 +15,45 @@ CSubclsWnd::~CSubclsWnd( )
 
 void CSubclsWnd::Initialize( )
 {
-    this->Create( NULL );
+    //this->Create( NULL );
 }
 
-LRESULT CSubclsWnd::onCreate( UINT msg, WPARAM wparam, LPARAM lparam, BOOL& fhandled )
+LRESULT CSubclsWnd::onChar( UINT msg, WPARAM wparam, LPARAM lparam, BOOL& fhandled )
 {
-    return ERROR_SUCCESS;
+	fhandled = FALSE;
+	return 0;
 }
+
+LRESULT CSubclsWnd::onPaint( UINT msg, WPARAM wparam, LPARAM lparam, BOOL& fhandled )
+{
+	HDC hdc;
+	RECT rect;
+	LRESULT lres;
+
+	// First - call the default windows proc
+	lres = this->DefWindowProcW( msg, wparam, lparam );
+
+	// then, highlight the word
+	highlight();
+
+	fhandled = TRUE;
+	return lres;
+}
+
+
+void CSubclsWnd::highlight( )
+{
+	HDC hdc;
+	RECT rect;
+
+	// then, draw diagonal
+	GetClientRect( &rect );
+	hdc = GetDC();
+	MoveToEx( hdc, rect.left, rect.top, NULL );
+	LineTo( hdc, rect.right, rect.bottom );
+	MoveToEx( hdc, rect.left, rect.bottom, NULL );
+	LineTo( hdc, rect.right, rect.top );
+	ReleaseDC(hdc);
+
+}
+
