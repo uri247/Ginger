@@ -17,10 +17,10 @@ public:
 		MESSAGE_HANDLER( WM_PAINT, onPaint )
     END_MSG_MAP()
 
+public:
+	void highlight( );
+
 private:
 	LRESULT onChar( UINT msg, WPARAM wparam, LPARAM lparam, BOOL& fhandled );
 	LRESULT onPaint( UINT msg, WPARAM wparam, LPARAM lparam, BOOL& fhandled );
-
-private:
-	void highlight( );
 };

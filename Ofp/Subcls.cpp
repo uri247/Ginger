@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Subcls.h"
+#include "trace.h"
 
 const UINT WM_ASYNC_TASK = RegisterWindowMessage(L"Async-Task");
 
@@ -20,14 +21,15 @@ void CSubclsWnd::Initialize( )
 
 LRESULT CSubclsWnd::onChar( UINT msg, WPARAM wparam, LPARAM lparam, BOOL& fhandled )
 {
+	InvalidateRect( NULL );
 	fhandled = FALSE;
 	return 0;
 }
 
 LRESULT CSubclsWnd::onPaint( UINT msg, WPARAM wparam, LPARAM lparam, BOOL& fhandled )
 {
-	HDC hdc;
-	RECT rect;
+	log_frame( "wnd", u::info ) << log_var(msg) << log_var(wparam) << log_var(lparam) << u::endh;
+
 	LRESULT lres;
 
 	// First - call the default windows proc
@@ -54,6 +56,5 @@ void CSubclsWnd::highlight( )
 	MoveToEx( hdc, rect.left, rect.bottom, NULL );
 	LineTo( hdc, rect.right, rect.top );
 	ReleaseDC(hdc);
-
 }
 

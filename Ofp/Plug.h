@@ -1,5 +1,6 @@
 #pragma once
-#include "resource.h"       // main symbols
+#include "resource.h"
+#include "Subcls.h"
 #include "Ofp_i.h"
 using namespace ATL;
 
@@ -53,6 +54,7 @@ public:
 
 	// IPlug
     STDMETHOD(Smile)( IDispatch* ifRibbonCtrl );
+    STDMETHOD(Check)( IDispatch* ifRibbonCtrl );
 
 private:
 	HRESULT STDMETHODCALLTYPE OnDocumentOpen( word::_Document* ifDoc );
@@ -68,6 +70,10 @@ private:
 
 private:
 	CComPtr<IDispatch> m_dispApplication;
+
+
+	// this should be a dictionary from doc to window.
+	CSubclsWnd* m_pSubclsWnd;
 };
 
 

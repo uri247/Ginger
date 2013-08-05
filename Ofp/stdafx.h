@@ -2,6 +2,7 @@
 // C++ Runtime
 #include <string>
 #include <functional>
+#include <array>
 
 // Windows
 #define _WIN32_WINNT            0x0601

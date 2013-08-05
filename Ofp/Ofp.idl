@@ -16,6 +16,7 @@ import "ocidl.idl";
 ]
 interface IPlug : IDispatch{
     [id(1)] HRESULT Smile( [in] IDispatch* ifRibbonCtrl );
+    [id(2)] HRESULT Check( [in] IDispatch* ifRibbonCtrl );
 };
 
 

@@ -4,8 +4,8 @@
         <tabs>
             <tab id="UTab" label="UTab">
                 <group id="UTools" label="U Tools">
-                    <button id="Smile" imageMso="HappyFace" size="large" label="Count" onAction="Smile" />
-                    <button id="Check" imageMso="AcceptInvitation" size="large" label="MSAA" onAction="Check" />
+                    <button id="Smile" imageMso="HappyFace" size="large" label="Subcls" onAction="Smile" />
+                    <button id="Check" imageMso="AcceptInvitation" size="large" label="Mark" onAction="Check" />
                 </group>
             </tab>
         </tabs>

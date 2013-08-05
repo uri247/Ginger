@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "trace.h"
 #include "Plug.h"
 #include "wndtools.h"
 #include "Subcls.h"
@@ -101,15 +102,28 @@ STDMETHODIMP CPlug::OnNewDocument ( word::_Document* ifDoc )
 }
 
 
-
 STDMETHODIMP CPlug::Smile( IDispatch* dispRibbonCtrl )
 {
+	log_frame( "plug", u::info ) << u::endh;
+	frame << "------------------------------------------------" << u::endr;
+
     HRESULT hr;
     CComPtr<mso::IRibbonControl> ifRibbonCtrl;
     hr = dispRibbonCtrl->QueryInterface( &ifRibbonCtrl );
 
     highlight();
     return hr;
+}
+
+
+STDMETHODIMP CPlug::Check( IDispatch* dispRibbonCtrl )
+{
+	log_frame( "plug", u::info ) << u::endh;
+	frame << "------------------------------------------------" << u::endr;
+	if( m_pSubclsWnd ) {
+		m_pSubclsWnd->highlight();
+	}
+	return S_OK;
 }
 
 
@@ -126,22 +140,6 @@ void CPlug::highlight( )
 }
 
 
-void CPlug::doHighlight( HWND hwnd )
-{
-	HDC hdc;
-	RECT rect;
-	PAINTSTRUCT ps;
-
-	GetClientRect( hwnd, &rect );
-	//hdc = BeginPaint( hwnd, &ps );
-	hdc = GetDC( hwnd );
-	MoveToEx( hdc, 0, 0, NULL );
-	LineTo( hdc, 50, 50 );
-	ReleaseDC( hwnd, hdc );
-	//EndPaint( hwnd, &ps );
-}
-
-
 void CPlug::subclassAllWindows( )
 {
 	HRESULT hr = S_OK;
@@ -149,8 +147,6 @@ void CPlug::subclassAllWindows( )
 	CComPtr<word::_Document> ifDoc;
 	CComPtr<word::Documents> ifDocs;
 	long numDocs;
-	HWND hwndTop;
-	HWND hwnd;
 
 	hr = m_dispApplication.QueryInterface( &ifWord );
 	hr = ifWord->get_Documents( &ifDocs );
@@ -205,6 +201,6 @@ void CPlug::subclassDocWindows( word::_Document* ifDoc )
 		return !wcscmp( ttl, L"Microsoft Word Document" );
 	});
 
-	CSubclsWnd* pSubclsWnd = new CSubclsWnd();
-	pSubclsWnd->SubclassWindow( hwnd );
+	m_pSubclsWnd = new CSubclsWnd();
+	m_pSubclsWnd->SubclassWindow( hwnd );
 }
