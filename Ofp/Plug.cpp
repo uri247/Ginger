@@ -6,9 +6,16 @@
 
 _ATL_FUNC_INFO FuncInfo_DocumentOpen = { CC_STDCALL, VT_EMPTY, 1, { VT_BYREF|VT_USERDEFINED }   };
 _ATL_FUNC_INFO FuncInfo_NewDocument = { CC_STDCALL, VT_EMPTY, 1, { VT_BYREF|VT_USERDEFINED }   };
+CPlug* CPlug::l_pinst = NULL;
 
 
-CPlug::CPlug() 
+CPlug::CPlug()
+	:m_pSubclsWnd( NULL )
+{
+}
+
+
+CPlug::~CPlug()
 {
 }
 
@@ -16,6 +23,7 @@ CPlug::CPlug()
 HRESULT
 CPlug::FinalConstruct()
 {
+	l_pinst = this;
 	return S_OK;
 }
 
@@ -185,7 +193,9 @@ void CPlug::subclassDocWindows( word::_Document* ifDoc )
 
 	// Find top window with title
 	std::wstring title(name);
-	title += L" - Microsoft Word";
+	//title += L" - Microsoft Word";
+	title += L" - Word";
+
 	hwndTop = findWindow( [title](HWND hwnd) -> bool {
 		wchar_t ttl[200];
 		GetWindowText( hwnd, ttl, _countof(ttl) );

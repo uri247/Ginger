@@ -38,8 +38,14 @@ public:
 
 public:
 	CPlug();
+	~CPlug();
 	HRESULT FinalConstruct();
 	void FinalRelease();
+
+public:
+	static CPlug* inst() {
+		return l_pinst;
+	}
 
 public:
     // addin::IDTExtensibility2
@@ -56,6 +62,11 @@ public:
     STDMETHOD(Smile)( IDispatch* ifRibbonCtrl );
     STDMETHOD(Check)( IDispatch* ifRibbonCtrl );
 
+public:
+	CSubclsWnd* getSubclsWnd() {
+		return m_pSubclsWnd;
+	}
+
 private:
 	HRESULT STDMETHODCALLTYPE OnDocumentOpen( word::_Document* ifDoc );
 	HRESULT STDMETHODCALLTYPE OnNewDocument( word::_Document* ifDoc );
@@ -67,6 +78,8 @@ private:
 	void subclassDocWindows( word::_Document* ifDoc );
 
 
+private:
+	static CPlug* l_pinst;
 
 private:
 	CComPtr<IDispatch> m_dispApplication;

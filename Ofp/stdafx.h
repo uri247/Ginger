@@ -3,6 +3,10 @@
 #include <string>
 #include <functional>
 #include <array>
+#include <algorithm>
+
+using std::min;
+using std::max;
 
 // Windows
 #define _WIN32_WINNT            0x0601
@@ -11,6 +15,7 @@
 #define NOMINMAX                1
 #include <Windows.h>
 #include <ShlObj.h>
+#include <gdiplus.h>
 
 // ATL
 #define _ATL_NO_AUTOMATIC_NAMESPACE

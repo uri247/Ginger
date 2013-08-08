@@ -26,6 +26,12 @@ LRESULT CSubclsWnd::onChar( UINT msg, WPARAM wparam, LPARAM lparam, BOOL& fhandl
 	return 0;
 }
 
+
+void CSubclsWnd::filter (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT& lResult, DWORD dwMsgMapID )
+{
+	ATLTRACE( "message: %x\n", uMsg );
+}
+
 LRESULT CSubclsWnd::onPaint( UINT msg, WPARAM wparam, LPARAM lparam, BOOL& fhandled )
 {
 	log_frame( "wnd", u::info ) << log_var(msg) << log_var(wparam) << log_var(lparam) << u::endh;
@@ -45,8 +51,14 @@ LRESULT CSubclsWnd::onPaint( UINT msg, WPARAM wparam, LPARAM lparam, BOOL& fhand
 
 void CSubclsWnd::highlight( )
 {
+	log_frame( "ging", u::info ) << u::endh;
+
 	HDC hdc;
 	RECT rect;
+
+	if( !m_hWnd ) {
+		return;
+	}
 
 	// then, draw diagonal
 	GetClientRect( &rect );
