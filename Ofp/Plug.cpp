@@ -193,8 +193,8 @@ void CPlug::subclassDocWindows( word::_Document* ifDoc )
 
 	// Find top window with title
 	std::wstring title(name);
-	//title += L" - Microsoft Word";
-	title += L" - Word";
+	title += L" - Microsoft Word";
+	//title += L" - Word";
 
 	hwndTop = findWindow( [title](HWND hwnd) -> bool {
 		wchar_t ttl[200];

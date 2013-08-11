@@ -3,13 +3,13 @@
 #include "Plug.h"
 #include "Subcls.h"
 
-
 HDC (WINAPI* stub_GetDC)( HWND ) = ::GetDC;
 int (WINAPI* stub_ReleaseDC)( HWND, HDC ) = ::ReleaseDC;
 BOOL (WINAPI* stub_BitBlt)( HDC, int, int, int, int, HDC, int, int, DWORD ) = ::BitBlt;
 BOOL (WINAPI* stub_UpdateLayeredWindow)( HWND, HDC, POINT*, SIZE*, HDC, POINT*, COLORREF, BLENDFUNCTION*, DWORD ) = ::UpdateLayeredWindow;
 LRESULT (WINAPI* stub_DispatchMessage)( const MSG* ) = ::DispatchMessage;
-
+//HRESULT (WINAPI* stub_CreateDXGIFactory1)( REFIID riid, void **ppFactory ) = ::CreateDXGIFactory1;
+HRESULT (WINAPI* stub_CreateDXGIFactory1)( REFIID riid, void **ppFactory ) = static_cast<HRESULT(WINAPI*)(const IID&, void**)>(DetourFindFunction( "dxgi.dll", "CreateDXGIFactory1" ));
 
 
 HDC WINAPI my_GetDC( HWND hwnd )
@@ -64,13 +64,21 @@ LRESULT WINAPI my_DispatchMessage( const MSG *pmsg )
 		if( pplug ) {
 			CSubclsWnd* pwnd = pplug->getSubclsWnd();
 			if( pwnd ) {
-		        CPlug::inst()->getSubclsWnd()->highlight();
+		        //CPlug::inst()->getSubclsWnd()->highlight();
 			}
 		}
 	}
 
 	frame << log_ret(result);
 	return result; 
+}
+
+HRESULT WINAPI my_CreateDXGIFactory1( REFIID riid, void **ppFactory )
+{
+	log_frame( "riid", u::info ) << u::endh;
+	HRESULT result = (*stub_CreateDXGIFactory1)(riid, ppFactory);
+	frame << log_ret(result);
+	return result;
 }
 
 
@@ -81,33 +89,23 @@ struct HookRecord {
 	void** ptr;
 	void* detour;
 } g_hooks[] = {
-	hook(GetDC),
-	hook(ReleaseDC),
-	hook(BitBlt),
-	hook(UpdateLayeredWindow),
-	hook(DispatchMessage)
+	//hook(GetDC),
+	//hook(ReleaseDC),
+	//hook(BitBlt),
+	//hook(UpdateLayeredWindow),
+	//hook(DispatchMessage),
+	hook(CreateDXGIFactory1),
 };
-
-
-void attachAll( )
-{
-	for( HookRecord& h : g_hooks ) {
-		DetourAttach( h.ptr, h.detour );
-	};
-}
-
-void detachAll( )
-{
-	for( HookRecord& h : g_hooks ) {
-	    DetourDetach( h.ptr, h.detour );
-	}
-}
 
 void attachDetours( )
 {
+	//void* fn = DetourFindFunction( "dxgi.dll", "CreateDXGIFactory1" );
+
     DetourTransactionBegin( );
     DetourUpdateThread( GetCurrentThread() );
-	attachAll( );
+	for( HookRecord& h : g_hooks ) {
+		DetourAttach( h.ptr, h.detour );
+	};
     DetourTransactionCommit( );
 }
 
@@ -116,6 +114,8 @@ void detachDetours( )
 {
     DetourTransactionBegin( );
     DetourUpdateThread( GetCurrentThread() );
-	detachAll( );
+	for( HookRecord& h : g_hooks ) {
+	    DetourDetach( h.ptr, h.detour );
+	}
     DetourTransactionCommit( );
 }

@@ -16,6 +16,9 @@ using std::max;
 #include <Windows.h>
 #include <ShlObj.h>
 #include <gdiplus.h>
+#include <d3d11_1.h>
+#include <d2d1_1.h>
+
 
 // ATL
 #define _ATL_NO_AUTOMATIC_NAMESPACE
