@@ -2,6 +2,7 @@
 #include "resource.h"
 #include "Subcls.h"
 #include "Ofp_i.h"
+#include "LayerWindow.h"
 using namespace ATL;
 
 class CPlug;
@@ -61,6 +62,8 @@ public:
 	// IPlug
     STDMETHOD(Smile)( IDispatch* ifRibbonCtrl );
     STDMETHOD(Check)( IDispatch* ifRibbonCtrl );
+    STDMETHOD(Bright)( IDispatch* ifRibbonCtrl );
+    STDMETHOD(Control)( IDispatch* ifRibbonCtrl );
 
 public:
 	CSubclsWnd* getSubclsWnd() {
@@ -72,7 +75,8 @@ private:
 	HRESULT STDMETHODCALLTYPE OnNewDocument( word::_Document* ifDoc );
 
 private:
-	void highlight();
+	word::_Document* activeDoc();
+	HWND getFirstHwnd( word::_Document* ifDoc );
 	void doHighlight(HWND hwnd);
 	void subclassAllWindows( );
 	void subclassDocWindows( word::_Document* ifDoc );
@@ -87,6 +91,7 @@ private:
 
 	// this should be a dictionary from doc to window.
 	CSubclsWnd* m_pSubclsWnd;
+	CLayeredWindow* m_pLayeredWindow;
 };
 
 

@@ -29,7 +29,7 @@ LRESULT CSubclsWnd::onChar( UINT msg, WPARAM wparam, LPARAM lparam, BOOL& fhandl
 
 void CSubclsWnd::filter (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT& lResult, DWORD dwMsgMapID )
 {
-	ATLTRACE( "message: %x\n", uMsg );
+	//ATLTRACE( "message: %x\n", uMsg );
 }
 
 LRESULT CSubclsWnd::onPaint( UINT msg, WPARAM wparam, LPARAM lparam, BOOL& fhandled )

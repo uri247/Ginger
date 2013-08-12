@@ -18,6 +18,7 @@ using std::max;
 #include <gdiplus.h>
 #include <d3d11_1.h>
 #include <d2d1_1.h>
+#include <dxgi.h>
 
 
 // ATL
@@ -27,6 +28,7 @@ using std::max;
 #define _ATL_DEBUG_QI                           1
 #define _ATL_DEBUG_INTERFACES                   1
 #include <atlbase.h>
+#include <atltypes.h>
 #include <atlcom.h>
 #include <atlwin.h>
 

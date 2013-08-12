@@ -3,6 +3,7 @@
 #include "Plug.h"
 #include "wndtools.h"
 #include "Subcls.h"
+#include "LayerWindow.h"
 
 _ATL_FUNC_INFO FuncInfo_DocumentOpen = { CC_STDCALL, VT_EMPTY, 1, { VT_BYREF|VT_USERDEFINED }   };
 _ATL_FUNC_INFO FuncInfo_NewDocument = { CC_STDCALL, VT_EMPTY, 1, { VT_BYREF|VT_USERDEFINED }   };
@@ -114,13 +115,15 @@ STDMETHODIMP CPlug::Smile( IDispatch* dispRibbonCtrl )
 {
 	log_frame( "plug", u::info ) << u::endh;
 	frame << "------------------------------------------------" << u::endr;
+    HRESULT hr = S_OK;
 
-    HRESULT hr;
-    CComPtr<mso::IRibbonControl> ifRibbonCtrl;
-    hr = dispRibbonCtrl->QueryInterface( &ifRibbonCtrl );
+    //CComPtr<mso::IRibbonControl> ifRibbonCtrl;
+    //hr = dispRibbonCtrl->QueryInterface( &ifRibbonCtrl );
 
-    highlight();
-    return hr;
+	CComPtr<word::_Document> ifDoc = activeDoc();
+	subclassDocWindows( ifDoc );
+
+	return hr;
 }
 
 
@@ -131,11 +134,44 @@ STDMETHODIMP CPlug::Check( IDispatch* dispRibbonCtrl )
 	if( m_pSubclsWnd ) {
 		m_pSubclsWnd->highlight();
 	}
+
+	//m_pLayeredWindow->MoveWindow( 200, 400, 600, 600 );
 	return S_OK;
 }
 
 
-void CPlug::highlight( )
+STDMETHODIMP CPlug::Bright( IDispatch* dispRibbonCtrl )
+{
+	log_frame( "plug", u::info ) << u::endh;
+	frame << "------------------------------------------------" << u::endr;
+
+	m_pLayeredWindow = new CLayeredWindow();
+	//RECT rect = { 200, 200, 400, 600 };
+	//m_pLayeredWindow->Create( 0, rect, L"blah", WS_OVERLAPPED | WS_SYSMENU | WS_THICKFRAME, WS_EX_LAYERED );
+	//m_pLayeredWindow->ShowWindow( SW_SHOW );
+
+	return S_OK;
+}
+
+STDMETHODIMP CPlug::Control( IDispatch* dispRibbonCtrl )
+{
+	log_frame( "plug", u::info ) << u::endh;
+	frame << "------------------------------------------------" << u::endr;
+
+	CComPtr<word::_Document> ifDoc = activeDoc();
+	HWND hwnd = getFirstHwnd( ifDoc );
+	RECT rect;
+	::GetClientRect( hwnd, &rect );
+	ClientToScreen( hwnd, (POINT*)&rect );
+	ClientToScreen( hwnd, ((POINT*)&rect) + 1 );
+	m_pLayeredWindow->MoveWindow( rect.left, rect.top, rect.right, rect.bottom );
+	return S_OK;
+}
+
+
+
+
+word::_Document* CPlug::activeDoc( )
 {
 	HRESULT hr = S_OK;
 	CComPtr<word::_Application> ifWord;
@@ -144,7 +180,7 @@ void CPlug::highlight( )
 	hr = m_dispApplication.QueryInterface( &ifWord );
 	hr = ifWord->get_ActiveDocument( &ifDoc );
 
-	subclassDocWindows( ifDoc );
+	return ifDoc.Detach();
 }
 
 
@@ -170,6 +206,13 @@ void CPlug::subclassAllWindows( )
 
 void CPlug::subclassDocWindows( word::_Document* ifDoc )
 {
+	HWND hwnd = getFirstHwnd( ifDoc );
+	m_pSubclsWnd = new CSubclsWnd();
+	m_pSubclsWnd->SubclassWindow( hwnd );
+}
+
+HWND CPlug::getFirstHwnd( word::_Document* ifDoc )
+{
 	HWND hwndTop;
 	HWND hwnd;
 	CComBSTR name;
@@ -186,7 +229,6 @@ void CPlug::subclassDocWindows( word::_Document* ifDoc )
 	CComPtr<word::Window> ifWindow;
 	CComVariant varNdx = ( (long)0 );
 	hr = ifWindows->Item( &varNdx, &ifWindow );
-
 
 	// get name of current document
 	hr = ifDoc->get_Name( &name );
@@ -211,6 +253,5 @@ void CPlug::subclassDocWindows( word::_Document* ifDoc )
 		return !wcscmp( ttl, L"Microsoft Word Document" );
 	});
 
-	m_pSubclsWnd = new CSubclsWnd();
-	m_pSubclsWnd->SubclassWindow( hwnd );
+	return hwnd;
 }

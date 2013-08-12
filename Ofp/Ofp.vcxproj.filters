@@ -21,6 +21,8 @@
     <ClCompile Include="wndtools.cpp" />
     <ClCompile Include="Subcls.cpp" />
     <ClCompile Include="detouring.cpp" />
+    <ClCompile Include="LayerWindow.cpp" />
+    <ClCompile Include="llcom.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ofp_i.h">
@@ -33,6 +35,8 @@
     <ClInclude Include="wndtools.h" />
     <ClInclude Include="Subcls.h" />
     <ClInclude Include="detouring.h" />
+    <ClInclude Include="LayerWindow.h" />
+    <ClInclude Include="llcom.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Ofp.rc">

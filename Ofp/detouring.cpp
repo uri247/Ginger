@@ -2,14 +2,18 @@
 #include "trace.h"
 #include "Plug.h"
 #include "Subcls.h"
+#include "llcom.h"
 
 HDC (WINAPI* stub_GetDC)( HWND ) = ::GetDC;
 int (WINAPI* stub_ReleaseDC)( HWND, HDC ) = ::ReleaseDC;
 BOOL (WINAPI* stub_BitBlt)( HDC, int, int, int, int, HDC, int, int, DWORD ) = ::BitBlt;
 BOOL (WINAPI* stub_UpdateLayeredWindow)( HWND, HDC, POINT*, SIZE*, HDC, POINT*, COLORREF, BLENDFUNCTION*, DWORD ) = ::UpdateLayeredWindow;
 LRESULT (WINAPI* stub_DispatchMessage)( const MSG* ) = ::DispatchMessage;
-//HRESULT (WINAPI* stub_CreateDXGIFactory1)( REFIID riid, void **ppFactory ) = ::CreateDXGIFactory1;
-HRESULT (WINAPI* stub_CreateDXGIFactory1)( REFIID riid, void **ppFactory ) = static_cast<HRESULT(WINAPI*)(const IID&, void**)>(DetourFindFunction( "dxgi.dll", "CreateDXGIFactory1" ));
+HRESULT (WINAPI* stub_CreateDXGIFactory1)( REFIID riid, void **ppFactory ) = ::CreateDXGIFactory1;
+HRESULT (WINAPI* stub_CreateDXGIFactory)( REFIID riid, void **ppFactory ) = ::CreateDXGIFactory;
+
+type_CreateSwapChain stub_CreateSwapChainX = static_cast<type_CreateSwapChain>( DetourFindFunction( "dxgi.dll", "CDXGIFactory::CreateSwapChainImpl" ) );
+type_CreateSwapChain stub_CreateSwapChain = static_cast<type_CreateSwapChain>( (void*)0x6acdaf69 );
 
 
 HDC WINAPI my_GetDC( HWND hwnd )
@@ -75,12 +79,28 @@ LRESULT WINAPI my_DispatchMessage( const MSG *pmsg )
 
 HRESULT WINAPI my_CreateDXGIFactory1( REFIID riid, void **ppFactory )
 {
-	log_frame( "riid", u::info ) << u::endh;
+	log_frame( "dxgi", u::info ) << u::endh;
 	HRESULT result = (*stub_CreateDXGIFactory1)(riid, ppFactory);
 	frame << log_ret(result);
 	return result;
 }
 
+HRESULT WINAPI my_CreateDXGIFactory( REFIID riid, void** ppFactory )
+{
+	log_frame( "dxgi", u::info ) << u::endh;
+	HRESULT result = (*stub_CreateDXGIFactory)(riid, ppFactory);
+	frame << log_ret(result);
+	return result;
+}
+
+
+HRESULT STDMETHODCALLTYPE my_CreateSwapChain( IDXGIFactory* This, IUnknown* ifDevice, DXGI_SWAP_CHAIN_DESC* pdesc, IDXGISwapChain** ppSwapChain )
+{
+	log_frame( "dxgi", u::info ) << u::endh;
+	HRESULT result = (*stub_CreateSwapChain)( This, ifDevice, pdesc, ppSwapChain );
+	frame << log_ret(result);
+	return result;
+}
 
 // ----------------------------------------
 #define hook(fn)      { &(void*&)stub_##fn, my_##fn }
@@ -95,11 +115,23 @@ struct HookRecord {
 	//hook(UpdateLayeredWindow),
 	//hook(DispatchMessage),
 	hook(CreateDXGIFactory1),
+	hook(CreateDXGIFactory),
+	hook(CreateSwapChain),
 };
+
+void resolveAddresses()
+{
+	CComPtr<IDXGIFactory> dxgiFactory;
+	HRESULT hr = S_OK;
+	hr = CreateDXGIFactory( __uuidof(IDXGIFactory), (void**)&dxgiFactory );
+	//stub_CreateSwapChain = resolve_CreateSwapChain( dxgiFactory );
+}
 
 void attachDetours( )
 {
 	//void* fn = DetourFindFunction( "dxgi.dll", "CreateDXGIFactory1" );
+
+	resolveAddresses();
 
     DetourTransactionBegin( );
     DetourUpdateThread( GetCurrentThread() );
