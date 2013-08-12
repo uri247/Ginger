@@ -16,6 +16,8 @@ using std::max;
 #include <Windows.h>
 #include <ShlObj.h>
 #include <gdiplus.h>
+#include <dxgi.h>
+
 
 // ATL
 #define _ATL_NO_AUTOMATIC_NAMESPACE
@@ -24,6 +26,7 @@ using std::max;
 #define _ATL_DEBUG_QI                           1
 #define _ATL_DEBUG_INTERFACES                   1
 #include <atlbase.h>
+#include <atltypes.h>
 #include <atlcom.h>
 #include <atlwin.h>
 

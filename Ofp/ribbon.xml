@@ -6,6 +6,8 @@
                 <group id="UTools" label="U Tools">
                     <button id="Smile" imageMso="HappyFace" size="large" label="Subcls" onAction="Smile" />
                     <button id="Check" imageMso="AcceptInvitation" size="large" label="Mark" onAction="Check" />
+                    <button id="Bright" imageMso="PictureBrightnessGallery" size="large" label="Mark" onAction="Bright" />
+                    <button id="Control" imageMso="ControlsGallery" size="large" label="Mark" onAction="Control" />
                 </group>
             </tab>
         </tabs>
