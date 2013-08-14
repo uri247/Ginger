@@ -10,10 +10,10 @@ COfpModule _AtlModule;
 extern "C" BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD reason, LPVOID lpReserved)
 {
 	if( reason == DLL_PROCESS_ATTACH ) {
-		attachDetours( );
+		//attachDetours( );
 	}
 	if( reason == DLL_PROCESS_DETACH ) {
-		detachDetours( );
+		//detachDetours( );
 	}
 
 	hInstance;

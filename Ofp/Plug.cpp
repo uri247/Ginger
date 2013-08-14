@@ -4,6 +4,7 @@
 #include "wndtools.h"
 #include "Subcls.h"
 #include "LayerWindow.h"
+#include "detouring.h"
 
 _ATL_FUNC_INFO FuncInfo_DocumentOpen = { CC_STDCALL, VT_EMPTY, 1, { VT_BYREF|VT_USERDEFINED }   };
 _ATL_FUNC_INFO FuncInfo_NewDocument = { CC_STDCALL, VT_EMPTY, 1, { VT_BYREF|VT_USERDEFINED }   };
@@ -25,6 +26,7 @@ HRESULT
 CPlug::FinalConstruct()
 {
 	l_pinst = this;
+	attachDetours();
 	return S_OK;
 }
 
@@ -32,6 +34,7 @@ CPlug::FinalConstruct()
 void
 CPlug::FinalRelease()
 {
+	detachDetours();
 }
 
 
@@ -56,6 +59,8 @@ STDMETHODIMP CPlug::OnConnection( IDispatch *dispApplication, addin::ext_Connect
 
 STDMETHODIMP CPlug::OnDisconnection( addin::ext_DisconnectMode removeMode, SAFEARRAY** custom )
 {
+	HRESULT hr = S_OK;
+	hr = EventImpl_Word::DispEventUnadvise( m_dispApplication );
     return S_OK;
 }
 

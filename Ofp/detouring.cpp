@@ -12,8 +12,12 @@ LRESULT (WINAPI* stub_DispatchMessage)( const MSG* ) = ::DispatchMessage;
 HRESULT (WINAPI* stub_CreateDXGIFactory1)( REFIID riid, void **ppFactory ) = ::CreateDXGIFactory1;
 HRESULT (WINAPI* stub_CreateDXGIFactory)( REFIID riid, void **ppFactory ) = ::CreateDXGIFactory;
 
-type_CreateSwapChain stub_CreateSwapChainX = static_cast<type_CreateSwapChain>( DetourFindFunction( "dxgi.dll", "CDXGIFactory::CreateSwapChainImpl" ) );
-type_CreateSwapChain stub_CreateSwapChain = static_cast<type_CreateSwapChain>( (void*)0x6acdaf69 );
+// "CDXGIFactory::CreateSwapChainImpl"
+type_CreateSwapChain stub_CreateSwapChain;
+type_CreateSwapChainForHwnd stub_CreateSwapChainForHwnd;
+type_Present stub_Present;
+type_Present1 stub_Present1;
+type_EndDraw stub_EndDraw;
 
 
 HDC WINAPI my_GetDC( HWND hwnd )
@@ -96,11 +100,60 @@ HRESULT WINAPI my_CreateDXGIFactory( REFIID riid, void** ppFactory )
 
 HRESULT STDMETHODCALLTYPE my_CreateSwapChain( IDXGIFactory* This, IUnknown* ifDevice, DXGI_SWAP_CHAIN_DESC* pdesc, IDXGISwapChain** ppSwapChain )
 {
-	log_frame( "dxgi", u::info ) << u::endh;
+	log_frame( "dxgi", u::info ) << log_var(ifDevice) << log_var(pdesc->OutputWindow) << log_var(pdesc->BufferCount) <<
+		log_var(pdesc->BufferDesc.Width) << log_var(pdesc->BufferDesc.Height) << u::endh;
 	HRESULT result = (*stub_CreateSwapChain)( This, ifDevice, pdesc, ppSwapChain );
 	frame << log_ret(result);
 	return result;
 }
+
+
+HRESULT STDMETHODCALLTYPE my_CreateSwapChainForHwnd( IDXGIFactory2* This, IUnknown* pDevice, HWND hWnd, const DXGI_SWAP_CHAIN_DESC1* pDesc, 
+	const DXGI_SWAP_CHAIN_FULLSCREEN_DESC* pFullscreenDesc, IDXGIOutput* pRestrictToOutput, IDXGISwapChain1** ppSwapChain )
+{
+	log_frame( "dxgi", u::info ) << log_var(pDevice) << log_var(hWnd) << 
+		log_var(pDesc->Width) << log_var(pDesc->Height) << log_var(pDesc->BufferCount) << u::endh;
+	HRESULT result = (*stub_CreateSwapChainForHwnd)( This, pDevice, hWnd, pDesc, pFullscreenDesc, pRestrictToOutput, ppSwapChain );
+	frame << log_var(*ppSwapChain) << log_ret(result);
+	return result;
+}
+
+
+HRESULT STDMETHODCALLTYPE my_Present( IDXGISwapChain* This, UINT SyncInterval, UINT Flags )
+{
+	log_frame( "dxgi", u::info ) << log_var(This) << u::endh;
+	HRESULT result = (*stub_Present)(This, SyncInterval, Flags );
+	frame << log_ret(result);
+	return result;
+}
+
+HRESULT STDMETHODCALLTYPE my_Present1( IDXGISwapChain1* This, UINT SyncInterval, UINT PresentFlags, const DXGI_PRESENT_PARAMETERS *pPresentParameters )
+{
+	log_frame( "dxgi", u::info ) << log_var(This) << u::endh;
+	HRESULT result = (*stub_Present1)(This, SyncInterval, PresentFlags, pPresentParameters );
+	frame << log_ret(result);
+	return result;
+}
+
+
+HRESULT STDMETHODCALLTYPE my_EndDraw( ID2D1RenderTarget* This, D2D1_TAG *tag1, D2D1_TAG *tag2 )
+{
+	HRESULT hr;
+	log_frame( "d2d1", u::info ) << log_var(This) << u::endh;
+
+
+	CComPtr<ID2D1SolidColorBrush> ifBrush;
+
+	hr = This->CreateSolidColorBrush( D2D1::ColorF( D2D1::ColorF::AliceBlue ), &ifBrush );
+	
+	This->DrawLine( D2D1::Point2F(0.0f, 0.0f), D2D1::Point2F(480.0f, 480.0f), ifBrush );
+
+	HRESULT result = (*stub_EndDraw)(This, tag1, tag2 );
+	frame << log_ret(result);
+	return result;
+}
+
+
 
 // ----------------------------------------
 #define hook(fn)      { &(void*&)stub_##fn, my_##fn }
@@ -114,31 +167,52 @@ struct HookRecord {
 	//hook(BitBlt),
 	//hook(UpdateLayeredWindow),
 	//hook(DispatchMessage),
-	hook(CreateDXGIFactory1),
-	hook(CreateDXGIFactory),
+	//hook(CreateDXGIFactory1),
+	//hook(CreateDXGIFactory),
 	hook(CreateSwapChain),
+	hook(CreateSwapChainForHwnd),
+	hook(Present),
+	hook(Present1),
+	hook(EndDraw),
 };
 
 void resolveAddresses()
 {
-	CComPtr<IDXGIFactory> dxgiFactory;
+	/* use this method as an alternative to dbghelp. For now we are good without it.
 	HRESULT hr = S_OK;
+	CComPtr<IDXGIFactory> dxgiFactory;
+	CComPtr<IDXGIFactory2> dxgiFactory2;
+
 	hr = CreateDXGIFactory( __uuidof(IDXGIFactory), (void**)&dxgiFactory );
-	//stub_CreateSwapChain = resolve_CreateSwapChain( dxgiFactory );
+	if( SUCCEEDED(hr) ) {
+		stub_CreateSwapChain = resolve_CreateSwapChain( dxgiFactory );
+	}
+
+	hr = dxgiFactory.QueryInterface( &dxgiFactory2 );
+	if( SUCCEEDED(hr) ) {
+		stub_CreateSwapChainForHwnd = resolve_CreateSwapChainForHwnd( dxgiFactory2 );
+	}
+	*/
+
+	stub_CreateSwapChain = static_cast<type_CreateSwapChain>( DetourFindFunction( "dxgi.dll", symbol_CreateSwapChain ) );
+	stub_CreateSwapChainForHwnd = static_cast<type_CreateSwapChainForHwnd>(	DetourFindFunction( "dxgi.dll", symbol_CreateSwapChainForHwnd ) );
+	stub_Present = static_cast<type_Present>( DetourFindFunction( "dxgi.dll", symbol_Present ) );
+	stub_Present1 = static_cast<type_Present1>( DetourFindFunction( "dxgi.dll", symbol_Present1 ) );
+	stub_EndDraw = static_cast<type_EndDraw>( DetourFindFunction( "d2d1.dll", symbol_EndDraw ) );
 }
 
 void attachDetours( )
 {
-	//void* fn = DetourFindFunction( "dxgi.dll", "CreateDXGIFactory1" );
+	LONG result, result1;
 
 	resolveAddresses();
 
     DetourTransactionBegin( );
     DetourUpdateThread( GetCurrentThread() );
 	for( HookRecord& h : g_hooks ) {
-		DetourAttach( h.ptr, h.detour );
+		result1 = DetourAttach( h.ptr, h.detour );
 	};
-    DetourTransactionCommit( );
+    result = DetourTransactionCommit( );
 }
 
 
