@@ -17,7 +17,10 @@ type_CreateSwapChain stub_CreateSwapChain;
 type_CreateSwapChainForHwnd stub_CreateSwapChainForHwnd;
 type_Present stub_Present;
 type_Present1 stub_Present1;
-type_EndDraw stub_EndDraw;
+type_EndDraw stub_EndDraw1;
+type_EndDraw stub_EndDraw2;
+type_EndDraw stub_EndDraw3;
+type_EndDraw stub_EndDraw4;
 
 
 HDC WINAPI my_GetDC( HWND hwnd )
@@ -136,7 +139,7 @@ HRESULT STDMETHODCALLTYPE my_Present1( IDXGISwapChain1* This, UINT SyncInterval,
 }
 
 
-HRESULT STDMETHODCALLTYPE my_EndDraw( ID2D1RenderTarget* This, D2D1_TAG *tag1, D2D1_TAG *tag2 )
+HRESULT STDMETHODCALLTYPE my_EndDraw1( ID2D1RenderTarget* This, D2D1_TAG *tag1, D2D1_TAG *tag2 )
 {
 	HRESULT hr;
 	log_frame( "d2d1", u::info ) << log_var(This) << u::endh;
@@ -148,12 +151,47 @@ HRESULT STDMETHODCALLTYPE my_EndDraw( ID2D1RenderTarget* This, D2D1_TAG *tag1, D
 	
 	This->DrawLine( D2D1::Point2F(0.0f, 0.0f), D2D1::Point2F(480.0f, 480.0f), ifBrush );
 
-	HRESULT result = (*stub_EndDraw)(This, tag1, tag2 );
+	HRESULT result = (*stub_EndDraw1)(This, tag1, tag2 );
 	frame << log_ret(result);
 	return result;
 }
 
 
+HRESULT STDMETHODCALLTYPE my_EndDraw2( ID2D1RenderTarget* This, D2D1_TAG *tag1, D2D1_TAG *tag2 )
+{
+	HRESULT hr;
+	log_frame( "d2d1", u::info ) << log_var(This) << u::endh;
+	CComPtr<ID2D1SolidColorBrush> ifBrush;
+	hr = This->CreateSolidColorBrush( D2D1::ColorF( D2D1::ColorF::AliceBlue ), &ifBrush );
+	This->DrawLine( D2D1::Point2F(0.0f, 0.0f), D2D1::Point2F(480.0f, 480.0f), ifBrush );
+	HRESULT result = (*stub_EndDraw2)(This, tag1, tag2 );
+	frame << log_ret(result);
+	return result;
+}
+
+HRESULT STDMETHODCALLTYPE my_EndDraw3( ID2D1RenderTarget* This, D2D1_TAG *tag1, D2D1_TAG *tag2 )
+{
+	HRESULT hr;
+	log_frame( "d2d1", u::info ) << log_var(This) << u::endh;
+	CComPtr<ID2D1SolidColorBrush> ifBrush;
+	hr = This->CreateSolidColorBrush( D2D1::ColorF( D2D1::ColorF::AliceBlue ), &ifBrush );
+	This->DrawLine( D2D1::Point2F(0.0f, 0.0f), D2D1::Point2F(480.0f, 480.0f), ifBrush );
+	HRESULT result = (*stub_EndDraw3)(This, tag1, tag2 );
+	frame << log_ret(result);
+	return result;
+}
+
+HRESULT STDMETHODCALLTYPE my_EndDraw4( ID2D1RenderTarget* This, D2D1_TAG *tag1, D2D1_TAG *tag2 )
+{
+	HRESULT hr;
+	log_frame( "d2d1", u::info ) << log_var(This) << u::endh;
+	CComPtr<ID2D1SolidColorBrush> ifBrush;
+	hr = This->CreateSolidColorBrush( D2D1::ColorF( D2D1::ColorF::AliceBlue ), &ifBrush );
+	This->DrawLine( D2D1::Point2F(0.0f, 0.0f), D2D1::Point2F(480.0f, 480.0f), ifBrush );
+	HRESULT result = (*stub_EndDraw4)(This, tag1, tag2 );
+	frame << log_ret(result);
+	return result;
+}
 
 // ----------------------------------------
 #define hook(fn)      { &(void*&)stub_##fn, my_##fn }
@@ -173,7 +211,10 @@ struct HookRecord {
 	hook(CreateSwapChainForHwnd),
 	hook(Present),
 	hook(Present1),
-	hook(EndDraw),
+	hook(EndDraw1),
+	hook(EndDraw2),
+	hook(EndDraw3),
+	hook(EndDraw4),
 };
 
 void resolveAddresses()
@@ -198,7 +239,10 @@ void resolveAddresses()
 	stub_CreateSwapChainForHwnd = static_cast<type_CreateSwapChainForHwnd>(	DetourFindFunction( "dxgi.dll", symbol_CreateSwapChainForHwnd ) );
 	stub_Present = static_cast<type_Present>( DetourFindFunction( "dxgi.dll", symbol_Present ) );
 	stub_Present1 = static_cast<type_Present1>( DetourFindFunction( "dxgi.dll", symbol_Present1 ) );
-	stub_EndDraw = static_cast<type_EndDraw>( DetourFindFunction( "d2d1.dll", symbol_EndDraw ) );
+	stub_EndDraw1 = static_cast<type_EndDraw>( DetourFindFunction( "d2d1.dll", symbol_EndDraw1 ) );
+	stub_EndDraw2 = static_cast<type_EndDraw>( DetourFindFunction( "d2d1.dll", symbol_EndDraw2 ) );
+	stub_EndDraw3 = static_cast<type_EndDraw>( DetourFindFunction( "d2d1.dll", symbol_EndDraw3 ) );
+	stub_EndDraw4 = static_cast<type_EndDraw>( DetourFindFunction( "d2d1.dll", symbol_EndDraw4 ) );
 }
 
 void attachDetours( )

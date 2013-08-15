@@ -29,9 +29,16 @@ char const* const symbol_Present1 = "?Present1@?IIDXGISwapChain1@CDXGISwapChain@
 typedef HRESULT (STDMETHODCALLTYPE* type_Present1)( IDXGISwapChain1* This, UINT SyncInterval, UINT PresentFlags, const DXGI_PRESENT_PARAMETERS *pPresentParameters );
 type_Present1 resolve_Present1( IDXGISwapChain1* This );
 
-char const* const symbol_EndDraw = "?EndDraw@?$D2DDeviceContextBase@UID2D1BitmapRenderTarget@@U1@UID2D1DeviceContext@@@@UAGJPA_K0@Z";
+
+char const* const symbol_EndDraw1 = "?EndDraw@?$D2DDeviceContextBase@UID2D1BitmapRenderTarget@@U1@UID2D1DeviceContext@@@@UAGJPA_K0@Z";
+char const* const symbol_EndDraw2 = "?EndDraw@?$D2DDeviceContextBase@UID2D1HwndRenderTarget@@U1@UID2D1DeviceContext@@@@UAGJPA_K0@Z";
+char const* const symbol_EndDraw3 = "?EndDraw@?$D2DDeviceContextBase@UID2D1DeviceContext@@U1@Vnull_type@@@@UAGJPA_K0@Z";
+char const* const symbol_EndDraw4 = "?EndDraw@?$D2DDeviceContextBase@UID2D1RenderTarget@@UID2D1DeviceContext@@U2@@@UAGJPA_K0@Z";
 typedef HRESULT (STDMETHODCALLTYPE* type_EndDraw)( ID2D1RenderTarget* This, D2D1_TAG *tag1, D2D1_TAG *tag2 );
 type_EndDraw resolve_EndDraw( ID2D1RenderTarget* This );
+
+
+
 
 
 #ifdef __cplusplus
