@@ -125,6 +125,16 @@ HRESULT STDMETHODCALLTYPE my_CreateSwapChainForHwnd( IDXGIFactory2* This, IUnkno
 HRESULT STDMETHODCALLTYPE my_Present( IDXGISwapChain* This, UINT SyncInterval, UINT Flags )
 {
 	log_frame( "dxgi", u::info ) << log_var(This) << u::endh;
+	HRESULT hr;
+
+	DXGI_SWAP_CHAIN_DESC desc;
+	hr = This->GetDesc( &desc );
+	frame << log_var(desc.BufferDesc.Width) << log_var(desc.BufferDesc.Height) << log_var(desc.OutputWindow);
+
+	CComPtr<IDXGIDevice> dxgiDevice;
+	hr = This->GetDevice( __uuidof(IDXGIDevice), (void**)&dxgiDevice );
+	frame << log_var(dxgiDevice);
+
 	HRESULT result = (*stub_Present)(This, SyncInterval, Flags );
 	frame << log_ret(result);
 	return result;
@@ -133,6 +143,20 @@ HRESULT STDMETHODCALLTYPE my_Present( IDXGISwapChain* This, UINT SyncInterval, U
 HRESULT STDMETHODCALLTYPE my_Present1( IDXGISwapChain1* This, UINT SyncInterval, UINT PresentFlags, const DXGI_PRESENT_PARAMETERS *pPresentParameters )
 {
 	log_frame( "dxgi", u::info ) << log_var(This) << u::endh;
+	HRESULT hr;
+
+	DXGI_SWAP_CHAIN_DESC1 desc;
+	hr = This->GetDesc1( &desc );
+	frame << log_var(desc.Width) << log_var(desc.Height);
+
+	HWND hwnd;
+	hr = This->GetHwnd( &hwnd );
+	frame << log_var(hwnd);
+
+	CComPtr<IDXGIDevice> dxgiDevice;
+	hr = This->GetDevice( __uuidof(IDXGIDevice), (void**)&dxgiDevice );
+	frame << log_var(dxgiDevice);
+
 	HRESULT result = (*stub_Present1)(This, SyncInterval, PresentFlags, pPresentParameters );
 	frame << log_ret(result);
 	return result;
