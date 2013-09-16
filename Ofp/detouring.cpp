@@ -12,15 +12,58 @@ LRESULT (WINAPI* stub_DispatchMessage)( const MSG* ) = ::DispatchMessage;
 HRESULT (WINAPI* stub_CreateDXGIFactory1)( REFIID riid, void **ppFactory ) = ::CreateDXGIFactory1;
 HRESULT (WINAPI* stub_CreateDXGIFactory)( REFIID riid, void **ppFactory ) = ::CreateDXGIFactory;
 
+
 // "CDXGIFactory::CreateSwapChainImpl"
 type_CreateSwapChain stub_CreateSwapChain;
 type_CreateSwapChainForHwnd stub_CreateSwapChainForHwnd;
-type_Present stub_Present;
+type_Present stub_Present_1;
+type_Present stub_Present_2;
 type_Present1 stub_Present1;
-type_EndDraw stub_EndDraw1;
-type_EndDraw stub_EndDraw2;
-type_EndDraw stub_EndDraw3;
-type_EndDraw stub_EndDraw4;
+type_EndDraw stub_EndDraw_1;
+type_EndDraw stub_EndDraw_2;
+type_EndDraw stub_EndDraw_3;
+type_EndDraw stub_EndDraw_4;
+type_EndDraw stub_EndDraw_5;
+type_CreateWicBitmapRenderTarget stub_CreateWicBitmapRenderTarget;
+type_DrawGlyphRun stub_DrawGlyphRun;
+
+
+struct tr_Present_1 {
+	static char const* const symbol() { return symbol_Present_1; }
+	static type_Present& stub() { return stub_Present_1; }
+};
+struct tr_Present_2 {
+	static char const* const symbol() { return symbol_Present_2; }
+	static type_Present& stub() { return stub_Present_2; }
+};
+
+struct tr_EndDraw_1 {
+	static char const* const symbol() { return symbol_EndDraw_1; }
+	static type_EndDraw& stub() { return stub_EndDraw_1; }
+	static char const* const name() { return "EndDraw_1"; }
+};
+struct tr_EndDraw_2 {
+	static char const* const symbol() { return symbol_EndDraw_2; }
+	static type_EndDraw& stub() { return stub_EndDraw_2; }
+	static char const* const name() { return "EndDraw_2"; }
+};
+struct tr_EndDraw_3 {
+	static char const* const symbol() { return symbol_EndDraw_3; }
+	static type_EndDraw& stub() { return stub_EndDraw_3; }
+	static char const* const name() { return "EndDraw_3"; }
+};
+struct tr_EndDraw_4 {
+	static char const* const symbol() { return symbol_EndDraw_4; }
+	static type_EndDraw& stub() { return stub_EndDraw_4; }
+	static char const* const name() { return "EndDraw_4"; }
+};
+struct tr_EndDraw_5 {
+	static char const* const symbol() { return symbol_EndDraw_5; }
+	static type_EndDraw& stub() { return stub_EndDraw_5; }
+	static char const* const name() { return "EndDraw_5"; }
+};
+
+
 
 
 HDC WINAPI my_GetDC( HWND hwnd )
@@ -121,7 +164,7 @@ HRESULT STDMETHODCALLTYPE my_CreateSwapChainForHwnd( IDXGIFactory2* This, IUnkno
 	return result;
 }
 
-
+template< typename Tr >
 HRESULT STDMETHODCALLTYPE my_Present( IDXGISwapChain* This, UINT SyncInterval, UINT Flags )
 {
 	log_frame( "dxgi", u::info ) << log_var(This) << u::endh;
@@ -135,7 +178,7 @@ HRESULT STDMETHODCALLTYPE my_Present( IDXGISwapChain* This, UINT SyncInterval, U
 	hr = This->GetDevice( __uuidof(IDXGIDevice), (void**)&dxgiDevice );
 	frame << log_var(dxgiDevice);
 
-	HRESULT result = (*stub_Present)(This, SyncInterval, Flags );
+	HRESULT result = Tr::stub()(This, SyncInterval, Flags );
 	frame << log_ret(result);
 	return result;
 }
@@ -162,60 +205,52 @@ HRESULT STDMETHODCALLTYPE my_Present1( IDXGISwapChain1* This, UINT SyncInterval,
 	return result;
 }
 
-
-HRESULT STDMETHODCALLTYPE my_EndDraw1( ID2D1RenderTarget* This, D2D1_TAG *tag1, D2D1_TAG *tag2 )
+template< typename Tr >
+HRESULT STDMETHODCALLTYPE my_EndDraw( ID2D1RenderTarget* This, D2D1_TAG *tag1, D2D1_TAG *tag2 )
 {
 	HRESULT hr;
-	log_frame( "d2d1", u::info ) << log_var(This) << u::endh;
+	log_frame( "d2d1", u::info ) << log_var(Tr::name()) << log_var(This) << u::endh;
 
 
 	CComPtr<ID2D1SolidColorBrush> ifBrush;
 
-	hr = This->CreateSolidColorBrush( D2D1::ColorF( D2D1::ColorF::AliceBlue ), &ifBrush );
+	hr = This->CreateSolidColorBrush( D2D1::ColorF( D2D1::ColorF::Black ), &ifBrush );
 	
 	This->DrawLine( D2D1::Point2F(0.0f, 0.0f), D2D1::Point2F(480.0f, 480.0f), ifBrush );
 
-	HRESULT result = (*stub_EndDraw1)(This, tag1, tag2 );
+	HRESULT result = Tr::stub()(This, tag1, tag2 );
 	frame << log_ret(result);
 	return result;
 }
 
 
-HRESULT STDMETHODCALLTYPE my_EndDraw2( ID2D1RenderTarget* This, D2D1_TAG *tag1, D2D1_TAG *tag2 )
+HRESULT STDMETHODCALLTYPE my_CreateWicBitmapRenderTarget( ID2D1Factory* This, IWICBitmap* target, const D2D1_RENDER_TARGET_PROPERTIES *renderTargetProperties, ID2D1RenderTarget** renderTarget )
 {
-	HRESULT hr;
 	log_frame( "d2d1", u::info ) << log_var(This) << u::endh;
-	CComPtr<ID2D1SolidColorBrush> ifBrush;
-	hr = This->CreateSolidColorBrush( D2D1::ColorF( D2D1::ColorF::AliceBlue ), &ifBrush );
-	This->DrawLine( D2D1::Point2F(0.0f, 0.0f), D2D1::Point2F(480.0f, 480.0f), ifBrush );
-	HRESULT result = (*stub_EndDraw2)(This, tag1, tag2 );
-	frame << log_ret(result);
+
+	// Some data about the bitmap
+	UINT width, height;
+	target->GetSize( &width, &height );
+	frame << log_var(width) << log_var(height) << u::endr;
+
+	HRESULT result = (*stub_CreateWicBitmapRenderTarget)( This, target, renderTargetProperties, renderTarget );
+	
+	frame << log_var(*renderTarget) << log_ret(result);
 	return result;
 }
 
-HRESULT STDMETHODCALLTYPE my_EndDraw3( ID2D1RenderTarget* This, D2D1_TAG *tag1, D2D1_TAG *tag2 )
+
+void STDMETHODCALLTYPE my_DrawGlyphRun( ID2D1RenderTarget* This, D2D1_POINT_2F baselineOrigin, const DWRITE_GLYPH_RUN *glyphRun, ID2D1Brush *foregroundBrush, DWRITE_MEASURING_MODE measuringMode )
 {
-	HRESULT hr;
-	log_frame( "d2d1", u::info ) << log_var(This) << u::endh;
-	CComPtr<ID2D1SolidColorBrush> ifBrush;
-	hr = This->CreateSolidColorBrush( D2D1::ColorF( D2D1::ColorF::AliceBlue ), &ifBrush );
-	This->DrawLine( D2D1::Point2F(0.0f, 0.0f), D2D1::Point2F(480.0f, 480.0f), ifBrush );
-	HRESULT result = (*stub_EndDraw3)(This, tag1, tag2 );
-	frame << log_ret(result);
-	return result;
+	log_frame( "d2d1", u::info ) << log_var(This) << log_var(baselineOrigin.x) << log_var(baselineOrigin.y) << u::endh;
+
+	(*stub_DrawGlyphRun)( This, baselineOrigin, glyphRun, foregroundBrush, measuringMode );
+	
+	return;
 }
 
-HRESULT STDMETHODCALLTYPE my_EndDraw4( ID2D1RenderTarget* This, D2D1_TAG *tag1, D2D1_TAG *tag2 )
-{
-	HRESULT hr;
-	log_frame( "d2d1", u::info ) << log_var(This) << u::endh;
-	CComPtr<ID2D1SolidColorBrush> ifBrush;
-	hr = This->CreateSolidColorBrush( D2D1::ColorF( D2D1::ColorF::AliceBlue ), &ifBrush );
-	This->DrawLine( D2D1::Point2F(0.0f, 0.0f), D2D1::Point2F(480.0f, 480.0f), ifBrush );
-	HRESULT result = (*stub_EndDraw4)(This, tag1, tag2 );
-	frame << log_ret(result);
-	return result;
-}
+
+
 
 // ----------------------------------------
 #define hook(fn)      { &(void*&)stub_##fn, my_##fn }
@@ -233,12 +268,16 @@ struct HookRecord {
 	//hook(CreateDXGIFactory),
 	hook(CreateSwapChain),
 	hook(CreateSwapChainForHwnd),
-	hook(Present),
+	//{ &(void*&)stub_Present_1, (type_Present)my_Present<tr_Present_1> },
+	//{ &(void*&)stub_Present_2, (type_Present)my_Present<tr_Present_2> },
 	hook(Present1),
-	hook(EndDraw1),
-	hook(EndDraw2),
-	hook(EndDraw3),
-	hook(EndDraw4),
+	{ &(void*&)stub_EndDraw_1, (type_EndDraw)my_EndDraw<tr_EndDraw_1> },
+	{ &(void*&)stub_EndDraw_2, (type_EndDraw)my_EndDraw<tr_EndDraw_2> },
+	{ &(void*&)stub_EndDraw_3, (type_EndDraw)my_EndDraw<tr_EndDraw_3> },
+	{ &(void*&)stub_EndDraw_4, (type_EndDraw)my_EndDraw<tr_EndDraw_4> },
+	{ &(void*&)stub_EndDraw_5, (type_EndDraw)my_EndDraw<tr_EndDraw_5> },
+	{ &(void*&)stub_CreateWicBitmapRenderTarget, (type_CreateWicBitmapRenderTarget)my_CreateWicBitmapRenderTarget },
+	{ &(void*&)stub_DrawGlyphRun, (type_DrawGlyphRun)my_DrawGlyphRun },
 };
 
 void resolveAddresses()
@@ -261,12 +300,20 @@ void resolveAddresses()
 
 	stub_CreateSwapChain = static_cast<type_CreateSwapChain>( DetourFindFunction( "dxgi.dll", symbol_CreateSwapChain ) );
 	stub_CreateSwapChainForHwnd = static_cast<type_CreateSwapChainForHwnd>(	DetourFindFunction( "dxgi.dll", symbol_CreateSwapChainForHwnd ) );
-	stub_Present = static_cast<type_Present>( DetourFindFunction( "dxgi.dll", symbol_Present ) );
+
+	stub_Present_1 = static_cast<type_Present>( DetourFindFunction( "dxgi.dll", symbol_Present_1 ) );
+	stub_Present_2 = static_cast<type_Present>( DetourFindFunction( "dxgi.dll", symbol_Present_2 ) );
+
 	stub_Present1 = static_cast<type_Present1>( DetourFindFunction( "dxgi.dll", symbol_Present1 ) );
-	stub_EndDraw1 = static_cast<type_EndDraw>( DetourFindFunction( "d2d1.dll", symbol_EndDraw1 ) );
-	stub_EndDraw2 = static_cast<type_EndDraw>( DetourFindFunction( "d2d1.dll", symbol_EndDraw2 ) );
-	stub_EndDraw3 = static_cast<type_EndDraw>( DetourFindFunction( "d2d1.dll", symbol_EndDraw3 ) );
-	stub_EndDraw4 = static_cast<type_EndDraw>( DetourFindFunction( "d2d1.dll", symbol_EndDraw4 ) );
+
+	stub_EndDraw_1 = static_cast<type_EndDraw>( DetourFindFunction( "d2d1.dll", symbol_EndDraw_1 ) );
+	stub_EndDraw_2 = static_cast<type_EndDraw>( DetourFindFunction( "d2d1.dll", symbol_EndDraw_2 ) );
+	stub_EndDraw_3 = static_cast<type_EndDraw>( DetourFindFunction( "d2d1.dll", symbol_EndDraw_3 ) );
+	stub_EndDraw_4 = static_cast<type_EndDraw>( DetourFindFunction( "d2d1.dll", symbol_EndDraw_4 ) );
+	stub_EndDraw_5 = static_cast<type_EndDraw>( DetourFindFunction( "d2d1.dll", symbol_EndDraw_5 ) );
+
+	stub_CreateWicBitmapRenderTarget = static_cast<type_CreateWicBitmapRenderTarget>( DetourFindFunction( "d2d1.dll", symbol_CreateWicBitmapRenderTarget ) );
+	stub_DrawGlyphRun = static_cast<type_DrawGlyphRun>( DetourFindFunction( "d2d1.dll", symbol_DrawGlyphRun ) );
 }
 
 void attachDetours( )
@@ -278,7 +325,9 @@ void attachDetours( )
     DetourTransactionBegin( );
     DetourUpdateThread( GetCurrentThread() );
 	for( HookRecord& h : g_hooks ) {
-		result1 = DetourAttach( h.ptr, h.detour );
+		if( *h.ptr ) {
+		    result1 = DetourAttach( h.ptr, h.detour );
+		}
 	};
     result = DetourTransactionCommit( );
 }
@@ -289,7 +338,9 @@ void detachDetours( )
     DetourTransactionBegin( );
     DetourUpdateThread( GetCurrentThread() );
 	for( HookRecord& h : g_hooks ) {
-	    DetourDetach( h.ptr, h.detour );
+		if( *h.ptr ) {
+	        DetourDetach( h.ptr, h.detour );
+		}
 	}
     DetourTransactionCommit( );
 }

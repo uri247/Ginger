@@ -3,6 +3,8 @@
 extern "C" {
 #endif
 
+
+
 char const* const symbol_CreateSwapChain = "?CreateSwapChain@CDXGIFactory@@UAGJPAUIUnknown@@PAUDXGI_SWAP_CHAIN_DESC@@PAPAUIDXGISwapChain@@@Z";
 typedef HRESULT (STDMETHODCALLTYPE* type_CreateSwapChain)( IDXGIFactory* This, IUnknown* ifDevice, DXGI_SWAP_CHAIN_DESC* pdesc, IDXGISwapChain** ppSwapChain );
 type_CreateSwapChain resolve_CreateSwapChain( IDXGIFactory* dxgiFactory );
@@ -20,7 +22,8 @@ type_CreateSwapChainForHwnd resolve_CreateSwapChainForHwnd( IDXGIFactory2* dxgiF
 */
 
 
-char const* const symbol_Present = "?Present@CDXGISwapChain@@UAGJII@Z";
+char const* const symbol_Present_1 = "?Present@CDXGISwapChain@@UAGJII@Z";
+char const* const symbol_Present_2 = "?Present@?$CDXGISwapChainBase@UIDXGISwapChain@@@@UAGJII@Z";
 typedef HRESULT (STDMETHODCALLTYPE* type_Present)( IDXGISwapChain* This, UINT SyncInterval, UINT Flags );
 type_Present resolve_Present( IDXGISwapChain* This );
 
@@ -30,14 +33,20 @@ typedef HRESULT (STDMETHODCALLTYPE* type_Present1)( IDXGISwapChain1* This, UINT 
 type_Present1 resolve_Present1( IDXGISwapChain1* This );
 
 
-char const* const symbol_EndDraw1 = "?EndDraw@?$D2DDeviceContextBase@UID2D1BitmapRenderTarget@@U1@UID2D1DeviceContext@@@@UAGJPA_K0@Z";
-char const* const symbol_EndDraw2 = "?EndDraw@?$D2DDeviceContextBase@UID2D1HwndRenderTarget@@U1@UID2D1DeviceContext@@@@UAGJPA_K0@Z";
-char const* const symbol_EndDraw3 = "?EndDraw@?$D2DDeviceContextBase@UID2D1DeviceContext@@U1@Vnull_type@@@@UAGJPA_K0@Z";
-char const* const symbol_EndDraw4 = "?EndDraw@?$D2DDeviceContextBase@UID2D1RenderTarget@@UID2D1DeviceContext@@U2@@@UAGJPA_K0@Z";
+char const* const symbol_EndDraw_1 = "?EndDraw@?$D2DDeviceContextBase@UID2D1BitmapRenderTarget@@U1@UID2D1DeviceContext@@@@UAGJPA_K0@Z";
+char const* const symbol_EndDraw_2 = "?EndDraw@?$D2DDeviceContextBase@UID2D1HwndRenderTarget@@U1@UID2D1DeviceContext@@@@UAGJPA_K0@Z";
+char const* const symbol_EndDraw_3 = "?EndDraw@?$D2DDeviceContextBase@UID2D1DeviceContext@@U1@Vnull_type@@@@UAGJPA_K0@Z";
+char const* const symbol_EndDraw_4 = "?EndDraw@?$D2DDeviceContextBase@UID2D1RenderTarget@@UID2D1DeviceContext@@U2@@@UAGJPA_K0@Z";
+char const* const symbol_EndDraw_5 = "?EndDraw@?$D2DRenderTargetBase@UID2D1BitmapRenderTarget@@@@UAGJPA_K0@Z";
 typedef HRESULT (STDMETHODCALLTYPE* type_EndDraw)( ID2D1RenderTarget* This, D2D1_TAG *tag1, D2D1_TAG *tag2 );
 type_EndDraw resolve_EndDraw( ID2D1RenderTarget* This );
 
 
+char const* const symbol_CreateWicBitmapRenderTarget = "?CreateWicBitmapRenderTarget@D2DFactory@@UAGJPAUIWICBitmap@@PBUD2D1_RENDER_TARGET_PROPERTIES@@PAPAUID2D1RenderTarget@@@Z";
+typedef HRESULT (STDMETHODCALLTYPE* type_CreateWicBitmapRenderTarget)( ID2D1Factory* This, IWICBitmap* target, const D2D1_RENDER_TARGET_PROPERTIES *renderTargetProperties, ID2D1RenderTarget** renderTarget );
+
+char const* const symbol_DrawGlyphRun = "?DrawGlyphRun@?$D2DRenderTargetBase@UID2D1HwndRenderTarget@@@@UAGXUD2D_POINT_2F@@PBUDWRITE_GLYPH_RUN@@PAUID2D1Brush@@W4DWRITE_MEASURING_MODE@@@Z";
+typedef void (STDMETHODCALLTYPE* type_DrawGlyphRun)( ID2D1RenderTarget* This, D2D1_POINT_2F baselineOrigin, const DWRITE_GLYPH_RUN *glyphRun, ID2D1Brush *foregroundBrush, DWRITE_MEASURING_MODE measuringMode );
 
 
 
