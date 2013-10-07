@@ -33,6 +33,9 @@ typedef HRESULT (STDMETHODCALLTYPE* type_Present1)( IDXGISwapChain1* This, UINT 
 type_Present1 resolve_Present1( IDXGISwapChain1* This );
 
 
+char const* const symbol_BeginDraw = "?BeginDraw@?$D2DRenderTargetBase@UID2D1BitmapRenderTarget@@@@UAGXXZ";
+typedef void (STDMETHODCALLTYPE* type_BeginDraw)( ID2D1RenderTarget* This );
+
 char const* const symbol_EndDraw_1 = "?EndDraw@?$D2DDeviceContextBase@UID2D1BitmapRenderTarget@@U1@UID2D1DeviceContext@@@@UAGJPA_K0@Z";
 char const* const symbol_EndDraw_2 = "?EndDraw@?$D2DDeviceContextBase@UID2D1HwndRenderTarget@@U1@UID2D1DeviceContext@@@@UAGJPA_K0@Z";
 char const* const symbol_EndDraw_3 = "?EndDraw@?$D2DDeviceContextBase@UID2D1DeviceContext@@U1@Vnull_type@@@@UAGJPA_K0@Z";

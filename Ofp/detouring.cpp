@@ -12,13 +12,13 @@ LRESULT (WINAPI* stub_DispatchMessage)( const MSG* ) = ::DispatchMessage;
 HRESULT (WINAPI* stub_CreateDXGIFactory1)( REFIID riid, void **ppFactory ) = ::CreateDXGIFactory1;
 HRESULT (WINAPI* stub_CreateDXGIFactory)( REFIID riid, void **ppFactory ) = ::CreateDXGIFactory;
 
-
 // "CDXGIFactory::CreateSwapChainImpl"
 type_CreateSwapChain stub_CreateSwapChain;
 type_CreateSwapChainForHwnd stub_CreateSwapChainForHwnd;
 type_Present stub_Present_1;
 type_Present stub_Present_2;
 type_Present1 stub_Present1;
+type_BeginDraw stub_BeginDraw;
 type_EndDraw stub_EndDraw_1;
 type_EndDraw stub_EndDraw_2;
 type_EndDraw stub_EndDraw_3;
@@ -205,6 +205,15 @@ HRESULT STDMETHODCALLTYPE my_Present1( IDXGISwapChain1* This, UINT SyncInterval,
 	return result;
 }
 
+
+void STDMETHODCALLTYPE my_BeginDraw( ID2D1RenderTarget* This )
+{
+	log_frame( "d2d1", u::info ) << log_var(This) << u::endh;
+	(*stub_BeginDraw)( This );
+	return;
+}
+
+
 template< typename Tr >
 HRESULT STDMETHODCALLTYPE my_EndDraw( ID2D1RenderTarget* This, D2D1_TAG *tag1, D2D1_TAG *tag2 )
 {
@@ -271,6 +280,7 @@ struct HookRecord {
 	//{ &(void*&)stub_Present_1, (type_Present)my_Present<tr_Present_1> },
 	//{ &(void*&)stub_Present_2, (type_Present)my_Present<tr_Present_2> },
 	hook(Present1),
+	hook(BeginDraw),
 	{ &(void*&)stub_EndDraw_1, (type_EndDraw)my_EndDraw<tr_EndDraw_1> },
 	{ &(void*&)stub_EndDraw_2, (type_EndDraw)my_EndDraw<tr_EndDraw_2> },
 	{ &(void*&)stub_EndDraw_3, (type_EndDraw)my_EndDraw<tr_EndDraw_3> },
@@ -305,6 +315,8 @@ void resolveAddresses()
 	stub_Present_2 = static_cast<type_Present>( DetourFindFunction( "dxgi.dll", symbol_Present_2 ) );
 
 	stub_Present1 = static_cast<type_Present1>( DetourFindFunction( "dxgi.dll", symbol_Present1 ) );
+
+	stub_BeginDraw = static_cast<type_BeginDraw>( DetourFindFunction( "d2d1.dll", symbol_BeginDraw ) );
 
 	stub_EndDraw_1 = static_cast<type_EndDraw>( DetourFindFunction( "d2d1.dll", symbol_EndDraw_1 ) );
 	stub_EndDraw_2 = static_cast<type_EndDraw>( DetourFindFunction( "d2d1.dll", symbol_EndDraw_2 ) );
