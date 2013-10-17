@@ -9,7 +9,8 @@
 _ATL_FUNC_INFO FuncInfo_DocumentOpen = { CC_STDCALL, VT_EMPTY, 1, { VT_BYREF|VT_USERDEFINED }   };
 _ATL_FUNC_INFO FuncInfo_NewDocument = { CC_STDCALL, VT_EMPTY, 1, { VT_BYREF|VT_USERDEFINED }   };
 CPlug* CPlug::l_pinst = NULL;
-
+long g_markLeft, g_markTop, g_markWidth, g_markHeight;
+POINT g_ptMark;
 
 CPlug::CPlug()
 	:m_pSubclsWnd( NULL )
@@ -106,7 +107,9 @@ STDMETHODIMP CPlug::GetCustomUI( BSTR RibbonID, BSTR* pRibbonXml )
 
 STDMETHODIMP CPlug::OnDocumentOpen( word::_Document* ifDoc )
 {
+#if HELLO_MSG
 	MessageBox( NULL, L"hello", L"world", MB_OK );
+#endif
     return S_OK;
 }
 
@@ -170,6 +173,35 @@ STDMETHODIMP CPlug::Control( IDispatch* dispRibbonCtrl )
 	ClientToScreen( hwnd, (POINT*)&rect );
 	ClientToScreen( hwnd, ((POINT*)&rect) + 1 );
 	m_pLayeredWindow->MoveWindow( rect.left, rect.top, rect.right, rect.bottom );
+	return S_OK;
+}
+
+
+STDMETHODIMP CPlug::Fxwiz( IDispatch* dispRibbonCtrl )
+{
+	log_frame( "plug", u::info ) << u::endh;
+	frame << "------------------------------------------------" << u::endr;
+	HRESULT hr;
+
+	CComPtr<word::_Document> ifDoc = activeDoc();
+	HWND hwnd = getFirstHwnd( ifDoc );
+	RECT rect;
+	::GetClientRect( hwnd, &rect );
+
+	CComVariant start(0);
+	CComVariant end(5);
+	CComPtr<word::Range> ifRange;
+	hr = ifDoc->Range( &start, &end, &ifRange );
+
+	CComPtr<word::Window> ifWnd;
+	hr = ifDoc->get_ActiveWindow( &ifWnd );
+
+	hr = ifWnd->GetPoint( &g_markLeft, &g_markTop, &g_markWidth, &g_markHeight, ifRange );
+
+	g_ptMark.x = g_markLeft;
+	g_ptMark.y = g_markTop;
+	ScreenToClient( hwnd, &g_ptMark );
+
 	return S_OK;
 }
 

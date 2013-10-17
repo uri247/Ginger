@@ -64,6 +64,7 @@ public:
     STDMETHOD(Check)( IDispatch* ifRibbonCtrl );
     STDMETHOD(Bright)( IDispatch* ifRibbonCtrl );
     STDMETHOD(Control)( IDispatch* ifRibbonCtrl );
+	STDMETHOD(Fxwiz)( IDispatch* ifFxwiz );
 
 public:
 	CSubclsWnd* getSubclsWnd() {

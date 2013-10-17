@@ -239,8 +239,11 @@ HRESULT STDMETHODCALLTYPE my_CreateWicBitmapRenderTarget( ID2D1Factory* This, IW
 
 	// Some data about the bitmap
 	UINT width, height;
+	double dpix, dpiy;
 	target->GetSize( &width, &height );
-	frame << log_var(width) << log_var(height) << u::endr;
+	target->GetResolution( &dpix, &dpiy );
+	frame << log_var(width) << log_var(height);
+	frame << log_var(dpix) << log_var(dpiy);
 
 	HRESULT result = (*stub_CreateWicBitmapRenderTarget)( This, target, renderTargetProperties, renderTarget );
 	

@@ -19,6 +19,7 @@ interface IPlug : IDispatch{
     [id(2)] HRESULT Check( [in] IDispatch* ifRibbonCtrl );
     [id(3)] HRESULT Bright( [in] IDispatch* ifRibbonCtrl );
     [id(4)] HRESULT Control( [in] IDispatch* ifRibbonCtrl );
+	[id(5)] HRESULT Fxwiz( [in] IDispatch* ifRibbonCtrl );
 };
 
 

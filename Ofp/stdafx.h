@@ -1,3 +1,5 @@
+#define HELLO_MSG               0
+
 
 // C++ Runtime
 #include <string>
