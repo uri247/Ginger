@@ -26,7 +26,8 @@ type_EndDraw stub_EndDraw_4;
 type_EndDraw stub_EndDraw_5;
 type_CreateWicBitmapRenderTarget stub_CreateWicBitmapRenderTarget;
 type_DrawGlyphRun stub_DrawGlyphRun;
-
+type_CreateBitmapFromWicBitmap stub_CreateBitmapFromWicBitmap;
+type_DrawBitmap stub_DrawBitmap;
 
 struct tr_Present_1 {
 	static char const* const symbol() { return symbol_Present_1; }
@@ -235,7 +236,7 @@ HRESULT STDMETHODCALLTYPE my_EndDraw( ID2D1RenderTarget* This, D2D1_TAG *tag1, D
 
 HRESULT STDMETHODCALLTYPE my_CreateWicBitmapRenderTarget( ID2D1Factory* This, IWICBitmap* target, const D2D1_RENDER_TARGET_PROPERTIES *renderTargetProperties, ID2D1RenderTarget** renderTarget )
 {
-	log_frame( "d2d1", u::info ) << log_var(This) << u::endh;
+	log_frame( "d2d1", u::info ) << log_var(This) << log_var(target) << u::endh;
 
 	// Some data about the bitmap
 	UINT width, height;
@@ -261,8 +262,44 @@ void STDMETHODCALLTYPE my_DrawGlyphRun( ID2D1RenderTarget* This, D2D1_POINT_2F b
 	return;
 }
 
+HRESULT STDMETHODCALLTYPE my_CreateBitmapFromWicBitmap( ID2D1RenderTarget* This, IWICBitmapSource* wicBitmapSource, const D2D1_BITMAP_PROPERTIES* bitmapProperties, ID2D1Bitmap** bitmap )
+{
+	log_frame( "d2d1", u::info ) << log_var(This) << log_var(wicBitmapSource);
 
+	double dpix, dpiy;
+	UINT width, height;
+	wicBitmapSource->GetResolution( &dpix, &dpiy );
+	wicBitmapSource->GetSize( &width, &height );
+	frame << log_var(dpix) << log_var(dpiy) << log_var(width) << log_var(height) << u::endh;
 
+	HRESULT result = (*stub_CreateBitmapFromWicBitmap)( This, wicBitmapSource, bitmapProperties, bitmap );
+
+	frame << log_var(*bitmap) << log_ret(result);
+	return result;
+}
+
+void STDMETHODCALLTYPE my_DrawBitmap( ID2D1RenderTarget* This, ID2D1Bitmap* bitmap, const D2D1_RECT_F* destRc, FLOAT opacity, 
+								  D2D1_BITMAP_INTERPOLATION_MODE interpolationMode, const D2D1_RECT_F* srcRc )
+{
+	log_frame( "d2d1", u::info ) << log_var(This) << log_var(bitmap) << log_var(opacity);
+
+	D2D1_SIZE_F bitmapSize = bitmap->GetSize( );
+	frame << log_var(bitmapSize.width) << log_var(bitmapSize.height);
+
+	if( destRc ) {
+		frame << log_var(destRc->left) << log_var(destRc->top) << log_var(destRc->right) << log_var(destRc->bottom);
+	}
+
+	if( srcRc ) {
+		frame << log_var(srcRc->left) << log_var(srcRc->top) << log_var(srcRc->right) << log_var(srcRc->bottom);
+	}
+
+	frame << u::endh;
+
+	(*stub_DrawBitmap)(This, bitmap, destRc, opacity, interpolationMode, srcRc );
+
+	return;
+}
 
 // ----------------------------------------
 #define hook(fn)      { &(void*&)stub_##fn, my_##fn }
@@ -289,8 +326,10 @@ struct HookRecord {
 	{ &(void*&)stub_EndDraw_3, (type_EndDraw)my_EndDraw<tr_EndDraw_3> },
 	{ &(void*&)stub_EndDraw_4, (type_EndDraw)my_EndDraw<tr_EndDraw_4> },
 	{ &(void*&)stub_EndDraw_5, (type_EndDraw)my_EndDraw<tr_EndDraw_5> },
-	{ &(void*&)stub_CreateWicBitmapRenderTarget, (type_CreateWicBitmapRenderTarget)my_CreateWicBitmapRenderTarget },
-	{ &(void*&)stub_DrawGlyphRun, (type_DrawGlyphRun)my_DrawGlyphRun },
+	{ &(void*&)stub_CreateWicBitmapRenderTarget, my_CreateWicBitmapRenderTarget },
+	{ &(void*&)stub_DrawGlyphRun, my_DrawGlyphRun },
+	{ &(void*&)stub_CreateBitmapFromWicBitmap, my_CreateBitmapFromWicBitmap },
+	{ &(void*&)stub_DrawBitmap, my_DrawBitmap },
 };
 
 void resolveAddresses()
@@ -329,6 +368,8 @@ void resolveAddresses()
 
 	stub_CreateWicBitmapRenderTarget = static_cast<type_CreateWicBitmapRenderTarget>( DetourFindFunction( "d2d1.dll", symbol_CreateWicBitmapRenderTarget ) );
 	stub_DrawGlyphRun = static_cast<type_DrawGlyphRun>( DetourFindFunction( "d2d1.dll", symbol_DrawGlyphRun ) );
+	stub_CreateBitmapFromWicBitmap = static_cast<type_CreateBitmapFromWicBitmap>( DetourFindFunction( "d2d1.dll", symbol_CreateBitmapFromWicBitmap ) );
+	stub_DrawBitmap = static_cast<type_DrawBitmap>( DetourFindFunction( "d2d1.dll", symbol_DrawBitmap ) );
 }
 
 void attachDetours( )

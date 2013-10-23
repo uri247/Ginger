@@ -51,6 +51,12 @@ typedef HRESULT (STDMETHODCALLTYPE* type_CreateWicBitmapRenderTarget)( ID2D1Fact
 char const* const symbol_DrawGlyphRun = "?DrawGlyphRun@?$D2DRenderTargetBase@UID2D1HwndRenderTarget@@@@UAGXUD2D_POINT_2F@@PBUDWRITE_GLYPH_RUN@@PAUID2D1Brush@@W4DWRITE_MEASURING_MODE@@@Z";
 typedef void (STDMETHODCALLTYPE* type_DrawGlyphRun)( ID2D1RenderTarget* This, D2D1_POINT_2F baselineOrigin, const DWRITE_GLYPH_RUN *glyphRun, ID2D1Brush *foregroundBrush, DWRITE_MEASURING_MODE measuringMode );
 
+char const* const symbol_CreateBitmapFromWicBitmap = "?CreateBitmapFromWicBitmap@?$D2DRenderTargetBase@UID2D1RenderTarget@@@@UAGJPAUIWICBitmapSource@@PBUD2D1_BITMAP_PROPERTIES@@PAPAUID2D1Bitmap@@@Z";
+typedef HRESULT (STDMETHODCALLTYPE* type_CreateBitmapFromWicBitmap)( ID2D1RenderTarget* This, IWICBitmapSource* wicBitmapSource, const D2D1_BITMAP_PROPERTIES* bitmapProperties, ID2D1Bitmap** bitmap );
+
+char const* const symbol_DrawBitmap = "?DrawBitmap@?$D2DRenderTargetBase@UID2D1RenderTarget@@@@UAGXPAUID2D1Bitmap@@PBUD2D_RECT_F@@MW4D2D1_BITMAP_INTERPOLATION_MODE@@1@Z";
+typedef void (STDMETHODCALLTYPE* type_DrawBitmap)( ID2D1RenderTarget* This, ID2D1Bitmap* bitmap, const D2D1_RECT_F *destinationRectangle, FLOAT opacity,
+											 D2D1_BITMAP_INTERPOLATION_MODE interpolationMode, const D2D1_RECT_F *sourceRectangle );
 
 
 #ifdef __cplusplus
