@@ -5,6 +5,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Ofp", "Ofp\Ofp.vcxproj", "{
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ulib", "..\..\cut\ulib\ulib.vcxproj", "{75BC5B35-06BD-43D0-A4D7-7C21FECFEE67}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "odb", "odb\odb.vcxproj", "{F0EA277B-3714-4364-9EED-EE7862BD47A9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -27,6 +29,12 @@ Global
 		{75BC5B35-06BD-43D0-A4D7-7C21FECFEE67}.Release|Win32.Build.0 = Release|Win32
 		{75BC5B35-06BD-43D0-A4D7-7C21FECFEE67}.Release|x64.ActiveCfg = Release|x64
 		{75BC5B35-06BD-43D0-A4D7-7C21FECFEE67}.Release|x64.Build.0 = Release|x64
+		{F0EA277B-3714-4364-9EED-EE7862BD47A9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F0EA277B-3714-4364-9EED-EE7862BD47A9}.Debug|x64.ActiveCfg = Debug|Win32
+		{F0EA277B-3714-4364-9EED-EE7862BD47A9}.Release|Win32.ActiveCfg = Release|Win32
+		{F0EA277B-3714-4364-9EED-EE7862BD47A9}.Release|Win32.Build.0 = Release|Win32
+		{F0EA277B-3714-4364-9EED-EE7862BD47A9}.Release|Win32.Deploy.0 = Release|Win32
+		{F0EA277B-3714-4364-9EED-EE7862BD47A9}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

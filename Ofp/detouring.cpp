@@ -222,11 +222,40 @@ HRESULT STDMETHODCALLTYPE my_EndDraw( ID2D1RenderTarget* This, D2D1_TAG *tag1, D
 	log_frame( "d2d1", u::info ) << log_var(Tr::name()) << log_var(This) << u::endh;
 
 
-	CComPtr<ID2D1SolidColorBrush> ifBrush;
+	CComPtr<ID2D1SolidColorBrush> ifBrushBlack;
+	CComPtr<ID2D1SolidColorBrush> ifBrushRed;
+	CComPtr<ID2D1SolidColorBrush> ifBrushGreen;
+	CComPtr<ID2D1SolidColorBrush> ifBrushBlue;
 
-	hr = This->CreateSolidColorBrush( D2D1::ColorF( D2D1::ColorF::Black ), &ifBrush );
-	
-	This->DrawLine( D2D1::Point2F(0.0f, 0.0f), D2D1::Point2F(480.0f, 480.0f), ifBrush );
+	hr = This->CreateSolidColorBrush( D2D1::ColorF( D2D1::ColorF::Black ), &ifBrushBlack );
+	hr = This->CreateSolidColorBrush( D2D1::ColorF( D2D1::ColorF::Red ), &ifBrushRed );
+	hr = This->CreateSolidColorBrush( D2D1::ColorF( D2D1::ColorF::Green ), &ifBrushGreen );
+	hr = This->CreateSolidColorBrush( D2D1::ColorF( D2D1::ColorF::Blue ), &ifBrushBlue );
+
+	D2D1_RECT_F rect;
+	rect.left = 0;
+	rect.top = 0;
+	rect.right = 1024;
+	rect.bottom = 2014;
+	//This->PushAxisAlignedClip( &rect, D2D1_ANTIALIAS_MODE_PER_PRIMITIVE );
+	//This->DrawLine( D2D1::Point2F(0.0f, 0.0f), D2D1::Point2F(480.0f, 480.0f), ifBrush );
+
+	for( int i=0; i<20; ++i ) {
+		for( int j=0; j<20; ++j ) {
+			float cy = i * 50.0f;
+			float cx = j * 50.0f;
+
+			ID2D1SolidColorBrush* ifBrush = 
+				( i<10 && j < 10 ) ? ifBrushBlack :
+				( i<10 ) ? ifBrushRed :
+				( j<10 ) ? ifBrushGreen :
+				ifBrushBlue;
+
+			This->DrawLine( D2D1::Point2F( cx - 5.0f, cy - 5.0f ), D2D1::Point2F( cx + 5.0f, cy + 5.0f ), ifBrush );
+			This->DrawLine( D2D1::Point2F( cx + 5.0f, cy - 5.0f ), D2D1::Point2F( cx - 5.0f, cy + 5.0f ), ifBrush );
+		}
+	}
+	//This->PopAxisAlignedClip();
 
 	HRESULT result = Tr::stub()(This, tag1, tag2 );
 	frame << log_ret(result);
@@ -253,9 +282,10 @@ HRESULT STDMETHODCALLTYPE my_CreateWicBitmapRenderTarget( ID2D1Factory* This, IW
 }
 
 
-void STDMETHODCALLTYPE my_DrawGlyphRun( ID2D1RenderTarget* This, D2D1_POINT_2F baselineOrigin, const DWRITE_GLYPH_RUN *glyphRun, ID2D1Brush *foregroundBrush, DWRITE_MEASURING_MODE measuringMode )
+void STDMETHODCALLTYPE my_DrawGlyphRun( ID2D1RenderTarget* This, D2D1_POINT_2F baselineOrigin, const DWRITE_GLYPH_RUN* glyphRun, ID2D1Brush *foregroundBrush, DWRITE_MEASURING_MODE measuringMode )
 {
-	log_frame( "d2d1", u::info ) << log_var(This) << log_var(baselineOrigin.x) << log_var(baselineOrigin.y) << u::endh;
+	log_frame( "d2d1", u::info ) << log_var(This) << log_var(baselineOrigin.x) << log_var(baselineOrigin.y) <<
+		log_var(glyphRun->glyphCount) << u::endh;
 
 	(*stub_DrawGlyphRun)( This, baselineOrigin, glyphRun, foregroundBrush, measuringMode );
 	
