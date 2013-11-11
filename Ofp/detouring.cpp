@@ -4,6 +4,14 @@
 #include "Subcls.h"
 #include "llcom.h"
 
+extern long g_markLeft, g_markTop, g_markWidth, g_markHeight;
+extern POINT g_ptMark;
+extern bool g_fRosebud;
+
+ID2D1RenderTarget* g_ifCurrentDrawTransaction = NULL;
+bool g_fHadGlyph = false;
+
+
 HDC (WINAPI* stub_GetDC)( HWND ) = ::GetDC;
 int (WINAPI* stub_ReleaseDC)( HWND, HDC ) = ::ReleaseDC;
 BOOL (WINAPI* stub_BitBlt)( HDC, int, int, int, int, HDC, int, int, DWORD ) = ::BitBlt;
@@ -240,22 +248,44 @@ HRESULT STDMETHODCALLTYPE my_EndDraw( ID2D1RenderTarget* This, D2D1_TAG *tag1, D
 	//This->PushAxisAlignedClip( &rect, D2D1_ANTIALIAS_MODE_PER_PRIMITIVE );
 	//This->DrawLine( D2D1::Point2F(0.0f, 0.0f), D2D1::Point2F(480.0f, 480.0f), ifBrush );
 
-	for( int i=0; i<20; ++i ) {
-		for( int j=0; j<20; ++j ) {
-			float cy = i * 50.0f;
-			float cx = j * 50.0f;
+    if( !g_fRosebud ) {
+	    for( int i=0; i<20; ++i ) {
 
-			ID2D1SolidColorBrush* ifBrush = 
-				( i<10 && j < 10 ) ? ifBrushBlack :
-				( i<10 ) ? ifBrushRed :
-				( j<10 ) ? ifBrushGreen :
-				ifBrushBlue;
+		    for( int j=0; j<20; ++j ) {
+			    float cy = i * 50.0f;
+			    float cx = j * 50.0f;
 
-			This->DrawLine( D2D1::Point2F( cx - 5.0f, cy - 5.0f ), D2D1::Point2F( cx + 5.0f, cy + 5.0f ), ifBrush );
-			This->DrawLine( D2D1::Point2F( cx + 5.0f, cy - 5.0f ), D2D1::Point2F( cx - 5.0f, cy + 5.0f ), ifBrush );
-		}
-	}
-	//This->PopAxisAlignedClip();
+			    ID2D1SolidColorBrush* ifBrush = 
+				    ( i<10 && j < 10 ) ? ifBrushBlack :
+				    ( i<10 ) ? ifBrushRed :
+				    ( j<10 ) ? ifBrushGreen :
+				    ifBrushBlue;
+
+			    This->DrawLine( D2D1::Point2F( cx - 5.0f, cy - 5.0f ), D2D1::Point2F( cx + 5.0f, cy + 5.0f ), ifBrush );
+			    This->DrawLine( D2D1::Point2F( cx + 5.0f, cy - 5.0f ), D2D1::Point2F( cx - 5.0f, cy + 5.0f ), ifBrush );
+		    }
+	    }
+	    //This->PopAxisAlignedClip();
+    }
+    else {
+        CPlug* pplug = CPlug::inst();
+        if( pplug ) {
+            bool f = pplug->getRosebudCoord();
+
+            if( f ) {
+                float left = (float)g_ptMark.x;
+                float top = (float)g_ptMark.y;
+                float right = left + g_markWidth;
+                float bottom = top + g_markHeight;
+
+                This->DrawLine( D2D1::Point2F(left, top), D2D1::Point2F(right, top), ifBrushBlack );
+                This->DrawLine( D2D1::Point2F(right, top), D2D1::Point2F(right, bottom), ifBrushBlack );
+                This->DrawLine( D2D1::Point2F(right, bottom), D2D1::Point2F(left, bottom), ifBrushBlack );
+                This->DrawLine( D2D1::Point2F(left, bottom), D2D1::Point2F(left, top), ifBrushBlack );
+            }
+        }
+
+    }
 
 	HRESULT result = Tr::stub()(This, tag1, tag2 );
 	frame << log_ret(result);

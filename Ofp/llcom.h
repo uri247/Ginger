@@ -48,7 +48,9 @@ type_EndDraw resolve_EndDraw( ID2D1RenderTarget* This );
 char const* const symbol_CreateWicBitmapRenderTarget = "?CreateWicBitmapRenderTarget@D2DFactory@@UAGJPAUIWICBitmap@@PBUD2D1_RENDER_TARGET_PROPERTIES@@PAPAUID2D1RenderTarget@@@Z";
 typedef HRESULT (STDMETHODCALLTYPE* type_CreateWicBitmapRenderTarget)( ID2D1Factory* This, IWICBitmap* target, const D2D1_RENDER_TARGET_PROPERTIES *renderTargetProperties, ID2D1RenderTarget** renderTarget );
 
-char const* const symbol_DrawGlyphRun = "?DrawGlyphRun@?$D2DRenderTargetBase@UID2D1HwndRenderTarget@@@@UAGXUD2D_POINT_2F@@PBUDWRITE_GLYPH_RUN@@PAUID2D1Brush@@W4DWRITE_MEASURING_MODE@@@Z";
+       
+char const* const symbol_DrawGlyphRun = "?DrawGlyphRun@?$D2DDeviceContextBase@UID2D1BitmapRenderTarget@@U1@UID2D1DeviceContext@@@@UAGXUD2D_POINT_2F@@PBUDWRITE_GLYPH_RUN@@PAUID2D1Brush@@W4DWRITE_MEASURING_MODE@@@Z";
+//char const* const symbol_DrawGlyphRun = "?DrawGlyphRun@?$D2DRenderTargetBase@UID2D1HwndRenderTarget@@@@UAGXUD2D_POINT_2F@@PBUDWRITE_GLYPH_RUN@@PAUID2D1Brush@@W4DWRITE_MEASURING_MODE@@@Z";
 typedef void (STDMETHODCALLTYPE* type_DrawGlyphRun)( ID2D1RenderTarget* This, D2D1_POINT_2F baselineOrigin, const DWRITE_GLYPH_RUN *glyphRun, ID2D1Brush *foregroundBrush, DWRITE_MEASURING_MODE measuringMode );
 
 char const* const symbol_CreateBitmapFromWicBitmap = "?CreateBitmapFromWicBitmap@?$D2DRenderTargetBase@UID2D1RenderTarget@@@@UAGJPAUIWICBitmapSource@@PBUD2D1_BITMAP_PROPERTIES@@PAPAUID2D1Bitmap@@@Z";

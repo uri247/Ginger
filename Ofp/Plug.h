@@ -8,7 +8,7 @@ using namespace ATL;
 class CPlug;
 extern _ATL_FUNC_INFO FuncInfo_DocumentOpen;
 extern _ATL_FUNC_INFO FuncInfo_NewDocument;
-
+extern _ATL_FUNC_INFO FuncInfo_DocumentBeforeClose;
 
 typedef IDispEventSimpleImpl<1, CPlug, &__uuidof(word::ApplicationEvents4)> EventImpl_Word;
 
@@ -27,7 +27,7 @@ public:
 	DECLARE_REGISTRY_RESOURCEID(IDR_PLUG)
 	DECLARE_PROTECT_FINAL_CONSTRUCT()
 	BEGIN_COM_MAP(CPlug)
-		COM_INTERFACE_ENTRY(addin::IDTExtensibility2)
+		COM_INTERFACE_ENTRY(addin::_IDTExtensibility2)
 		COM_INTERFACE_ENTRY(mso::IRibbonExtensibility)
 		COM_INTERFACE_ENTRY(IPlug)
 		COM_INTERFACE_ENTRY2(IDispatch, IPlug)
@@ -35,6 +35,7 @@ public:
 	BEGIN_SINK_MAP(CPlug)
         SINK_ENTRY_INFO(1, __uuidof(word::ApplicationEvents4), 0x00000004, OnDocumentOpen, &FuncInfo_DocumentOpen )
 		SINK_ENTRY_INFO(1, __uuidof(word::ApplicationEvents4), 0x00000009, OnNewDocument, &FuncInfo_NewDocument )
+        SINK_ENTRY_INFO(1, __uuidof(word::ApplicationEvents4), 0x00000006, OnDocumentBeforeClose, &FuncInfo_DocumentBeforeClose )
     END_SINK_MAP()
 
 public:
@@ -70,10 +71,13 @@ public:
 	CSubclsWnd* getSubclsWnd() {
 		return m_pSubclsWnd;
 	}
+    void getRosebud();
+    bool getRosebudCoord();
 
 private:
 	HRESULT STDMETHODCALLTYPE OnDocumentOpen( word::_Document* ifDoc );
 	HRESULT STDMETHODCALLTYPE OnNewDocument( word::_Document* ifDoc );
+    HRESULT STDMETHODCALLTYPE OnDocumentBeforeClose( word::_Document* ifDoc, VARIANT_BOOL* cancel );
 
 private:
 	word::_Document* activeDoc();

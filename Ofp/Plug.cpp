@@ -6,11 +6,16 @@
 #include "LayerWindow.h"
 #include "detouring.h"
 
-_ATL_FUNC_INFO FuncInfo_DocumentOpen = { CC_STDCALL, VT_EMPTY, 1, { VT_BYREF|VT_USERDEFINED }   };
-_ATL_FUNC_INFO FuncInfo_NewDocument = { CC_STDCALL, VT_EMPTY, 1, { VT_BYREF|VT_USERDEFINED }   };
+_ATL_FUNC_INFO FuncInfo_DocumentOpen = { CC_STDCALL, VT_EMPTY, 1, { VT_BYREF|VT_USERDEFINED } };
+_ATL_FUNC_INFO FuncInfo_NewDocument = { CC_STDCALL, VT_EMPTY, 1, { VT_BYREF|VT_USERDEFINED } };
+_ATL_FUNC_INFO FuncInfo_DocumentBeforeClose = { CC_STDCALL, VT_EMPTY, 2, { VT_BYREF|VT_USERDEFINED, VT_BYREF|VT_BOOL } };
+
+
 CPlug* CPlug::l_pinst = NULL;
 long g_markLeft, g_markTop, g_markWidth, g_markHeight;
 POINT g_ptMark;
+bool g_fRosebud = false;
+CComPtr<word::Range> g_ifRosebudRange;
 
 CPlug::CPlug()
 	:m_pSubclsWnd( NULL )
@@ -118,6 +123,15 @@ STDMETHODIMP CPlug::OnNewDocument ( word::_Document* ifDoc )
 	return S_OK;
 }
 
+STDMETHODIMP CPlug::OnDocumentBeforeClose( word::_Document* ifDoc, VARIANT_BOOL* cancel )
+{
+    if( g_ifRosebudRange ) {
+        g_ifRosebudRange.Release();
+    }
+    return S_OK;
+}
+
+
 
 STDMETHODIMP CPlug::Smile( IDispatch* dispRibbonCtrl )
 {
@@ -179,30 +193,89 @@ STDMETHODIMP CPlug::Control( IDispatch* dispRibbonCtrl )
 
 STDMETHODIMP CPlug::Fxwiz( IDispatch* dispRibbonCtrl )
 {
+    g_fRosebud = true;
+    getRosebud();
+    return S_OK;
+}
+
+bool CPlug::getRosebudCoord( )
+{
+    HRESULT hr;
+	CComPtr<word::_Document> ifDoc;
+    bool retval = false;    
+   	CComPtr<word::Window> ifWnd;
+    HWND hwnd;
+
+    ifDoc = activeDoc();
+    if( ifDoc ) {
+
+	    hr = ifDoc->get_ActiveWindow( &ifWnd );
+    
+        hwnd = getFirstHwnd( ifDoc );
+
+        if( g_ifRosebudRange != NULL ) {
+            hr = ifWnd->GetPoint( &g_markLeft, &g_markTop, &g_markWidth, &g_markHeight, g_ifRosebudRange );
+            if( SUCCEEDED(hr) ) {
+	            g_ptMark.x = g_markLeft;
+	            g_ptMark.y = g_markTop;
+	            ScreenToClient( hwnd, &g_ptMark );
+                retval = true;
+            }
+        }
+    }
+    return retval;
+}
+
+void CPlug::getRosebud( )
+{
 	log_frame( "plug", u::info ) << u::endh;
 	frame << "------------------------------------------------" << u::endr;
 	HRESULT hr;
 
-	CComPtr<word::_Document> ifDoc = activeDoc();
-	HWND hwnd = getFirstHwnd( ifDoc );
-	RECT rect;
-	::GetClientRect( hwnd, &rect );
+    if( g_ifRosebudRange != NULL ) {
+        g_ifRosebudRange.Release();
+    }
 
-	CComVariant start(0);
-	CComVariant end(5);
+	CComPtr<word::_Document> ifDoc;
+	ifDoc = activeDoc();
+
 	CComPtr<word::Range> ifRange;
-	hr = ifDoc->Range( &start, &end, &ifRange );
+	ifDoc->get_Content( &ifRange );
 
-	CComPtr<word::Window> ifWnd;
-	hr = ifDoc->get_ActiveWindow( &ifWnd );
+	CComPtr<word::Find> ifFind;
+	ifRange->get_Find( &ifFind );
 
-	hr = ifWnd->GetPoint( &g_markLeft, &g_markTop, &g_markWidth, &g_markHeight, ifRange );
+	hr = ifFind->ClearFormatting();
+	CComBSTR rosebud( "rosebud" );
+	ifFind->put_Text( rosebud );
+	CComVariant vtext( L"rosebud" );
+	CComVariant vtrue(true);
+	CComVariant vfalse(false);
+    CComVariant vnone( word::wdNone );
+    VARIANT_BOOL prop;
 
-	g_ptMark.x = g_markLeft;
-	g_ptMark.y = g_markTop;
-	ScreenToClient( hwnd, &g_ptMark );
+	hr = ifFind->Execute( 
+		&vtext,         // text
+		&vtrue,         // case
+		&vfalse,        // whole word
+        &vfalse,        // whild card
+        &vfalse,        // soundex
+        &vfalse,        // all word forms
+        &vtrue,         // forward
+        &vfalse,        // wrap
+        &vfalse,        // format
+        NULL,           // replace
+        &vnone,         // wdNone
+        &vfalse,        // match kashida
+        &vfalse,        // match diacritics
+        &vfalse,        // match alef hamza
+        &vfalse,        // match control
+        &prop );
 
-	return S_OK;
+    if( prop ) {
+        g_ifRosebudRange = ifRange;
+    }
+
 }
 
 
@@ -214,8 +287,13 @@ word::_Document* CPlug::activeDoc( )
 	CComPtr<word::_Application> ifWord;
 	CComPtr<word::_Document> ifDoc;
 
-	hr = m_dispApplication.QueryInterface( &ifWord );
-	hr = ifWord->get_ActiveDocument( &ifDoc );
+    if( SUCCEEDED(hr) ) {
+        hr = m_dispApplication.QueryInterface( &ifWord );
+    }
+
+    if( SUCCEEDED(hr) ) {
+	    hr = ifWord->get_ActiveDocument( &ifDoc );
+    }
 
 	return ifDoc.Detach();
 }
@@ -251,10 +329,9 @@ void CPlug::subclassDocWindows( word::_Document* ifDoc )
 HWND CPlug::getFirstHwnd( word::_Document* ifDoc )
 {
 	HWND hwndTop;
-	HWND hwnd;
-	CComBSTR name;
 	HRESULT hr;
 	long numWindows;
+    HWND hwnd;
 
 	// Verify we have only one window for the document (TODO: handle that case later)
 	CComPtr<word::Windows> ifWindows;
@@ -264,30 +341,17 @@ HWND CPlug::getFirstHwnd( word::_Document* ifDoc )
 	ATLTRACE( "There are currently %d windows for current document", numWindows );
 
 	CComPtr<word::Window> ifWindow;
-	CComVariant varNdx = ( (long)0 );
+	CComVariant varNdx = ( (long)1 );
 	hr = ifWindows->Item( &varNdx, &ifWindow );
 
-	// get name of current document
-	hr = ifDoc->get_Name( &name );
-
-	// Find top window with title
-	std::wstring title(name);
-	//title += L" - Microsoft Word";
-	title += L" - Word";
-
-	hwndTop = findWindow( [title](HWND hwnd) -> bool {
-		wchar_t ttl[200];
-		GetWindowText( hwnd, ttl, _countof(ttl) );
-		ATLTRACE( "window: %ls\n", ttl );
-		return title == ttl;
-	});
+	ifWindow->get_Hwnd( (long*)&hwndTop );
 
 	// Find the child window
 	hwnd = findChildWindow( hwndTop, [](HWND hwnd) -> bool {
-		wchar_t ttl[200];
-		GetWindowText( hwnd, ttl, _countof(ttl) );
-		ATLTRACE( "child window: %ls\n", ttl );
-		return !wcscmp( ttl, L"Microsoft Word Document" );
+		wchar_t klass[200];
+        GetClassName( hwnd, klass, _countof(klass) );
+		ATLTRACE( "child window: %ls\n", klass );
+		return !wcscmp( klass, L"_WwG" );
 	});
 
 	return hwnd;
