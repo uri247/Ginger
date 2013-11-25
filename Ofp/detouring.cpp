@@ -9,7 +9,7 @@ extern POINT g_ptMark;
 extern bool g_fRosebud;
 
 ID2D1RenderTarget* g_ifCurrentDrawTransaction = NULL;
-bool g_fHadGlyph = false;
+ID2D1RenderTarget* g_currentRtWithGlyph = NULL;
 
 
 HDC (WINAPI* stub_GetDC)( HWND ) = ::GetDC;
@@ -229,62 +229,65 @@ HRESULT STDMETHODCALLTYPE my_EndDraw( ID2D1RenderTarget* This, D2D1_TAG *tag1, D
 	HRESULT hr;
 	log_frame( "d2d1", u::info ) << log_var(Tr::name()) << log_var(This) << u::endh;
 
+    if( g_currentRtWithGlyph == This ) {
 
-	CComPtr<ID2D1SolidColorBrush> ifBrushBlack;
-	CComPtr<ID2D1SolidColorBrush> ifBrushRed;
-	CComPtr<ID2D1SolidColorBrush> ifBrushGreen;
-	CComPtr<ID2D1SolidColorBrush> ifBrushBlue;
+	    CComPtr<ID2D1SolidColorBrush> ifBrushBlack;
+	    CComPtr<ID2D1SolidColorBrush> ifBrushRed;
+	    CComPtr<ID2D1SolidColorBrush> ifBrushGreen;
+	    CComPtr<ID2D1SolidColorBrush> ifBrushBlue;
 
-	hr = This->CreateSolidColorBrush( D2D1::ColorF( D2D1::ColorF::Black ), &ifBrushBlack );
-	hr = This->CreateSolidColorBrush( D2D1::ColorF( D2D1::ColorF::Red ), &ifBrushRed );
-	hr = This->CreateSolidColorBrush( D2D1::ColorF( D2D1::ColorF::Green ), &ifBrushGreen );
-	hr = This->CreateSolidColorBrush( D2D1::ColorF( D2D1::ColorF::Blue ), &ifBrushBlue );
+	    hr = This->CreateSolidColorBrush( D2D1::ColorF( D2D1::ColorF::Black ), &ifBrushBlack );
+	    hr = This->CreateSolidColorBrush( D2D1::ColorF( D2D1::ColorF::Red ), &ifBrushRed );
+	    hr = This->CreateSolidColorBrush( D2D1::ColorF( D2D1::ColorF::Green ), &ifBrushGreen );
+	    hr = This->CreateSolidColorBrush( D2D1::ColorF( D2D1::ColorF::Blue ), &ifBrushBlue );
 
-	D2D1_RECT_F rect;
-	rect.left = 0;
-	rect.top = 0;
-	rect.right = 1024;
-	rect.bottom = 2014;
-	//This->PushAxisAlignedClip( &rect, D2D1_ANTIALIAS_MODE_PER_PRIMITIVE );
-	//This->DrawLine( D2D1::Point2F(0.0f, 0.0f), D2D1::Point2F(480.0f, 480.0f), ifBrush );
+	    D2D1_RECT_F rect;
+	    rect.left = 0;
+	    rect.top = 0;
+	    rect.right = 1024;
+	    rect.bottom = 2014;
+	    //This->PushAxisAlignedClip( &rect, D2D1_ANTIALIAS_MODE_PER_PRIMITIVE );
+	    //This->DrawLine( D2D1::Point2F(0.0f, 0.0f), D2D1::Point2F(480.0f, 480.0f), ifBrush );
 
-    if( !g_fRosebud ) {
-	    for( int i=0; i<20; ++i ) {
+        if( !g_fRosebud ) {
+	        for( int i=0; i<20; ++i ) {
 
-		    for( int j=0; j<20; ++j ) {
-			    float cy = i * 50.0f;
-			    float cx = j * 50.0f;
+		        for( int j=0; j<20; ++j ) {
+			        float cy = i * 50.0f;
+			        float cx = j * 50.0f;
 
-			    ID2D1SolidColorBrush* ifBrush = 
-				    ( i<10 && j < 10 ) ? ifBrushBlack :
-				    ( i<10 ) ? ifBrushRed :
-				    ( j<10 ) ? ifBrushGreen :
-				    ifBrushBlue;
+			        ID2D1SolidColorBrush* ifBrush = 
+				        ( i<10 && j < 10 ) ? ifBrushBlack :
+				        ( i<10 ) ? ifBrushRed :
+				        ( j<10 ) ? ifBrushGreen :
+				        ifBrushBlue;
 
-			    This->DrawLine( D2D1::Point2F( cx - 5.0f, cy - 5.0f ), D2D1::Point2F( cx + 5.0f, cy + 5.0f ), ifBrush );
-			    This->DrawLine( D2D1::Point2F( cx + 5.0f, cy - 5.0f ), D2D1::Point2F( cx - 5.0f, cy + 5.0f ), ifBrush );
-		    }
-	    }
-	    //This->PopAxisAlignedClip();
-    }
-    else {
-        CPlug* pplug = CPlug::inst();
-        if( pplug ) {
-            bool f = pplug->getRosebudCoord();
-
-            if( f ) {
-                float left = (float)g_ptMark.x;
-                float top = (float)g_ptMark.y;
-                float right = left + g_markWidth;
-                float bottom = top + g_markHeight;
-
-                This->DrawLine( D2D1::Point2F(left, top), D2D1::Point2F(right, top), ifBrushBlack );
-                This->DrawLine( D2D1::Point2F(right, top), D2D1::Point2F(right, bottom), ifBrushBlack );
-                This->DrawLine( D2D1::Point2F(right, bottom), D2D1::Point2F(left, bottom), ifBrushBlack );
-                This->DrawLine( D2D1::Point2F(left, bottom), D2D1::Point2F(left, top), ifBrushBlack );
-            }
+			        This->DrawLine( D2D1::Point2F( cx - 5.0f, cy - 5.0f ), D2D1::Point2F( cx + 5.0f, cy + 5.0f ), ifBrush );
+			        This->DrawLine( D2D1::Point2F( cx + 5.0f, cy - 5.0f ), D2D1::Point2F( cx - 5.0f, cy + 5.0f ), ifBrush );
+		        }
+	        }
+	        //This->PopAxisAlignedClip();
         }
+        else {
+            CPlug* pplug = CPlug::inst();
+            if( pplug ) {
+                bool f = pplug->getRosebudCoord();
 
+                if( f ) {
+                    float left = (float)g_ptMark.x;
+                    float top = (float)g_ptMark.y;
+                    float right = left + g_markWidth;
+                    float bottom = top + g_markHeight;
+
+                    This->DrawLine( D2D1::Point2F(left, top), D2D1::Point2F(right, top), ifBrushBlack );
+                    This->DrawLine( D2D1::Point2F(right, top), D2D1::Point2F(right, bottom), ifBrushBlack );
+                    This->DrawLine( D2D1::Point2F(right, bottom), D2D1::Point2F(left, bottom), ifBrushBlack );
+                    This->DrawLine( D2D1::Point2F(left, bottom), D2D1::Point2F(left, top), ifBrushBlack );
+                }
+            }
+
+        }
+        g_currentRtWithGlyph = NULL;
     }
 
 	HRESULT result = Tr::stub()(This, tag1, tag2 );
@@ -316,6 +319,8 @@ void STDMETHODCALLTYPE my_DrawGlyphRun( ID2D1RenderTarget* This, D2D1_POINT_2F b
 {
 	log_frame( "d2d1", u::info ) << log_var(This) << log_var(baselineOrigin.x) << log_var(baselineOrigin.y) <<
 		log_var(glyphRun->glyphCount) << u::endh;
+
+    g_currentRtWithGlyph = This;
 
 	(*stub_DrawGlyphRun)( This, baselineOrigin, glyphRun, foregroundBrush, measuringMode );
 	
