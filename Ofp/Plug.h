@@ -3,14 +3,13 @@
 #include "Subcls.h"
 #include "Ofp_i.h"
 #include "LayerWindow.h"
-using namespace ATL;
+#include "DocumentData.h"
+
 
 class CPlug;
-extern _ATL_FUNC_INFO FuncInfo_DocumentOpen;
-extern _ATL_FUNC_INFO FuncInfo_NewDocument;
-extern _ATL_FUNC_INFO FuncInfo_DocumentBeforeClose;
 
 typedef IDispEventSimpleImpl<1, CPlug, &__uuidof(word::ApplicationEvents4)> EventImpl_Word;
+
 
 
 
@@ -61,18 +60,22 @@ public:
     STDMETHOD(GetCustomUI)( BSTR RibbonID, BSTR* RibbonXml );
 
 	// IPlug
-    STDMETHOD(Smile)( IDispatch* ifRibbonCtrl );
-    STDMETHOD(Check)( IDispatch* ifRibbonCtrl );
-    STDMETHOD(Bright)( IDispatch* ifRibbonCtrl );
-    STDMETHOD(Control)( IDispatch* ifRibbonCtrl );
-	STDMETHOD(Fxwiz)( IDispatch* ifFxwiz );
+    STDMETHOD(Smile)( IDispatch* dispRibbonCtrl );
+    STDMETHOD(Check)( IDispatch* dispRibbonCtrl );
+    STDMETHOD(Bright)( IDispatch* dispRibbonCtrl );
+    STDMETHOD(Control)( IDispatch* dispRibbonCtrl );
+	STDMETHOD(Fxwiz)( IDispatch* dispRibbonCtrl );
+    STDMETHOD(CheckRosebud)( IDispatch* dispRibbonCtrl, VARIANT_BOOL state );
+    STDMETHOD(CheckGrid)( IDispatch* dispRibbonCtrl, VARIANT_BOOL state );
+
 
 public:
-	CSubclsWnd* getSubclsWnd() {
-		return m_pSubclsWnd;
-	}
     void getRosebud();
     bool getRosebudCoord();
+
+    CSubclsWnd* getSubclsWnd()      { return m_pSubclsWnd; }
+    bool IsDoingRosebud()           { return m_fDoRosebud; }
+    bool IsDoingGrid()              { return m_fDoGrid; }
 
 private:
 	HRESULT STDMETHODCALLTYPE OnDocumentOpen( word::_Document* ifDoc );
@@ -80,23 +83,31 @@ private:
     HRESULT STDMETHODCALLTYPE OnDocumentBeforeClose( word::_Document* ifDoc, VARIANT_BOOL* cancel );
 
 private:
-	word::_Document* activeDoc();
+	HRESULT getActiveDoc( word::_Document** pifDoc );
 	HWND getFirstHwnd( word::_Document* ifDoc );
 	void doHighlight(HWND hwnd);
 	void subclassAllWindows( );
 	void subclassDocWindows( word::_Document* ifDoc );
+    bool m_fDoRosebud;
+    bool m_fDoGrid;
 
 
-private:
-	static CPlug* l_pinst;
 
 private:
 	CComPtr<IDispatch> m_dispApplication;
 
-
-	// this should be a dictionary from doc to window.
 	CSubclsWnd* m_pSubclsWnd;
 	CLayeredWindow* m_pLayeredWindow;
+
+    CDocumentDataManager m_docManager;
+
+
+private:
+	static CPlug* l_pinst;
+    static _ATL_FUNC_INFO FuncInfo_DocumentOpen;
+    static _ATL_FUNC_INFO FuncInfo_NewDocument;
+    static _ATL_FUNC_INFO FuncInfo_DocumentBeforeClose;
+
 };
 
 

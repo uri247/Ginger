@@ -6,7 +6,6 @@
 
 extern long g_markLeft, g_markTop, g_markWidth, g_markHeight;
 extern POINT g_ptMark;
-extern bool g_fRosebud;
 
 ID2D1RenderTarget* g_ifCurrentDrawTransaction = NULL;
 ID2D1RenderTarget* g_currentRtWithGlyph = NULL;
@@ -249,7 +248,7 @@ HRESULT STDMETHODCALLTYPE my_EndDraw( ID2D1RenderTarget* This, D2D1_TAG *tag1, D
 	    //This->PushAxisAlignedClip( &rect, D2D1_ANTIALIAS_MODE_PER_PRIMITIVE );
 	    //This->DrawLine( D2D1::Point2F(0.0f, 0.0f), D2D1::Point2F(480.0f, 480.0f), ifBrush );
 
-        if( !g_fRosebud ) {
+        if( CPlug::inst()->IsDoingGrid() ) {
 	        for( int i=0; i<20; ++i ) {
 
 		        for( int j=0; j<20; ++j ) {
@@ -268,7 +267,8 @@ HRESULT STDMETHODCALLTYPE my_EndDraw( ID2D1RenderTarget* This, D2D1_TAG *tag1, D
 	        }
 	        //This->PopAxisAlignedClip();
         }
-        else {
+
+        if( CPlug::inst()->IsDoingRosebud() ) {
             CPlug* pplug = CPlug::inst();
             if( pplug ) {
                 bool f = pplug->getRosebudCoord();

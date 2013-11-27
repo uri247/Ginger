@@ -20,6 +20,8 @@ interface IPlug : IDispatch{
     [id(3)] HRESULT Bright( [in] IDispatch* ifRibbonCtrl );
     [id(4)] HRESULT Control( [in] IDispatch* ifRibbonCtrl );
 	[id(5)] HRESULT Fxwiz( [in] IDispatch* ifRibbonCtrl );
+    [id(6)] HRESULT CheckRosebud( [in] IDispatch* ifRibbonCtrl, [in] VARIANT_BOOL state );
+    [id(7)] HRESULT CheckGrid( [in] IDispatch* ifRibbonCtrl, [in] VARIANT_BOOL state );
 };
 
 

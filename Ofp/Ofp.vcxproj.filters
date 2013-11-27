@@ -23,6 +23,7 @@
     <ClCompile Include="detouring.cpp" />
     <ClCompile Include="LayerWindow.cpp" />
     <ClCompile Include="llcom.c" />
+    <ClCompile Include="DocumentData.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ofp_i.h">
@@ -37,6 +38,8 @@
     <ClInclude Include="detouring.h" />
     <ClInclude Include="LayerWindow.h" />
     <ClInclude Include="llcom.h" />
+    <ClInclude Include="utils.h" />
+    <ClInclude Include="DocumentData.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Ofp.rc">

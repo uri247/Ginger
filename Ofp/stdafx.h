@@ -6,6 +6,9 @@
 #include <functional>
 #include <array>
 #include <algorithm>
+#include <map>
+#include <vector>
+#include <memory>
 
 using std::min;
 using std::max;
@@ -34,6 +37,7 @@ using std::max;
 #include <atltypes.h>
 #include <atlcom.h>
 #include <atlwin.h>
+using namespace ATL;
 
 // Office
 #undef ExitWindows
@@ -52,3 +56,5 @@ using std::max;
 // Detour
 #include <detours.h>
 
+
+#include "utils.h"

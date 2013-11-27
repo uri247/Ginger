@@ -1,24 +1,27 @@
 #include "stdafx.h"
 #include "trace.h"
 #include "Plug.h"
-#include "wndtools.h"
 #include "Subcls.h"
 #include "LayerWindow.h"
 #include "detouring.h"
 
-_ATL_FUNC_INFO FuncInfo_DocumentOpen = { CC_STDCALL, VT_EMPTY, 1, { VT_BYREF|VT_USERDEFINED } };
-_ATL_FUNC_INFO FuncInfo_NewDocument = { CC_STDCALL, VT_EMPTY, 1, { VT_BYREF|VT_USERDEFINED } };
-_ATL_FUNC_INFO FuncInfo_DocumentBeforeClose = { CC_STDCALL, VT_EMPTY, 2, { VT_BYREF|VT_USERDEFINED, VT_BYREF|VT_BOOL } };
-
-
+// class variables
+_ATL_FUNC_INFO CPlug::FuncInfo_DocumentOpen = { CC_STDCALL, VT_EMPTY, 1, { VT_BYREF|VT_USERDEFINED } };
+_ATL_FUNC_INFO CPlug::FuncInfo_NewDocument = { CC_STDCALL, VT_EMPTY, 1, { VT_BYREF|VT_USERDEFINED } };
+_ATL_FUNC_INFO CPlug::FuncInfo_DocumentBeforeClose = { CC_STDCALL, VT_EMPTY, 2, { VT_BYREF|VT_USERDEFINED, VT_BYREF|VT_BOOL } };
 CPlug* CPlug::l_pinst = NULL;
+
 long g_markLeft, g_markTop, g_markWidth, g_markHeight;
 POINT g_ptMark;
-bool g_fRosebud = false;
-CComPtr<word::Range> g_ifRosebudRange;
+
+
+
+// --------------------------------------------------------------
 
 CPlug::CPlug()
 	:m_pSubclsWnd( NULL )
+    ,m_fDoGrid(false)
+    ,m_fDoRosebud(false)
 {
 }
 
@@ -109,7 +112,6 @@ STDMETHODIMP CPlug::GetCustomUI( BSTR RibbonID, BSTR* pRibbonXml )
     return hr;
 }
 
-
 STDMETHODIMP CPlug::OnDocumentOpen( word::_Document* ifDoc )
 {
 #if HELLO_MSG
@@ -125,9 +127,7 @@ STDMETHODIMP CPlug::OnNewDocument ( word::_Document* ifDoc )
 
 STDMETHODIMP CPlug::OnDocumentBeforeClose( word::_Document* ifDoc, VARIANT_BOOL* cancel )
 {
-    if( g_ifRosebudRange ) {
-        g_ifRosebudRange.Release();
-    }
+    m_docManager.removeDocumentData( ifDoc );
     return S_OK;
 }
 
@@ -142,8 +142,12 @@ STDMETHODIMP CPlug::Smile( IDispatch* dispRibbonCtrl )
     //CComPtr<mso::IRibbonControl> ifRibbonCtrl;
     //hr = dispRibbonCtrl->QueryInterface( &ifRibbonCtrl );
 
-	CComPtr<word::_Document> ifDoc = activeDoc();
-	subclassDocWindows( ifDoc );
+	CComPtr<word::_Document> ifDoc;
+    hr = getActiveDoc( &ifDoc );
+
+    if( SUCCEEDED(hr) ) {
+        subclassDocWindows( ifDoc );
+    }
 
 	return hr;
 }
@@ -177,13 +181,19 @@ STDMETHODIMP CPlug::Bright( IDispatch* dispRibbonCtrl )
 
 STDMETHODIMP CPlug::Control( IDispatch* dispRibbonCtrl )
 {
+    HRESULT hr;
+    RECT rect;
+    HWND hwnd;
+	CComPtr<word::_Document> ifDoc;
+
 	log_frame( "plug", u::info ) << u::endh;
 	frame << "------------------------------------------------" << u::endr;
 
-	CComPtr<word::_Document> ifDoc = activeDoc();
-	HWND hwnd = getFirstHwnd( ifDoc );
-	RECT rect;
-	::GetClientRect( hwnd, &rect );
+    
+    hr = getActiveDoc( &ifDoc );
+	hwnd = getFirstHwnd( ifDoc );
+
+    ::GetClientRect( hwnd, &rect );
 	ClientToScreen( hwnd, (POINT*)&rect );
 	ClientToScreen( hwnd, ((POINT*)&rect) + 1 );
 	m_pLayeredWindow->MoveWindow( rect.left, rect.top, rect.right, rect.bottom );
@@ -193,33 +203,66 @@ STDMETHODIMP CPlug::Control( IDispatch* dispRibbonCtrl )
 
 STDMETHODIMP CPlug::Fxwiz( IDispatch* dispRibbonCtrl )
 {
-    g_fRosebud = true;
-    getRosebud();
     return S_OK;
 }
+
+STDMETHODIMP CPlug::CheckRosebud( IDispatch* ifRibbonCtrl, VARIANT_BOOL state )
+{
+    if( state ) {
+        m_fDoRosebud = true;
+        getRosebud();
+    }
+    else {
+        m_fDoRosebud = false;
+    }
+
+    return S_OK;
+}
+
+STDMETHODIMP CPlug::CheckGrid( IDispatch* ifRibbonCtrl, VARIANT_BOOL state )
+{
+    if( state ) {
+        m_fDoGrid = true;
+    }
+    else {
+        m_fDoGrid = false;
+    }
+    return S_OK;
+}
+
 
 bool CPlug::getRosebudCoord( )
 {
     HRESULT hr;
 	CComPtr<word::_Document> ifDoc;
-    bool retval = false;    
-   	CComPtr<word::Window> ifWnd;
-    HWND hwnd;
+    bool retval = false;
 
-    ifDoc = activeDoc();
-    if( ifDoc ) {
+    hr = getActiveDoc( &ifDoc );
 
-	    hr = ifDoc->get_ActiveWindow( &ifWnd );
-    
-        hwnd = getFirstHwnd( ifDoc );
 
-        if( g_ifRosebudRange != NULL ) {
-            hr = ifWnd->GetPoint( &g_markLeft, &g_markTop, &g_markWidth, &g_markHeight, g_ifRosebudRange );
-            if( SUCCEEDED(hr) ) {
-	            g_ptMark.x = g_markLeft;
-	            g_ptMark.y = g_markTop;
-	            ScreenToClient( hwnd, &g_ptMark );
-                retval = true;
+    if( SUCCEEDED(hr) )
+    {
+        CDocumentData* pdocdata;
+
+        pdocdata = m_docManager.getDocumentData( ifDoc );
+        if( pdocdata->m_ifRosebudRanges.size() > 0 )
+        {
+            HWND hwnd;
+            CComPtr<word::Range> ifRange;
+   	        CComPtr<word::Window> ifWnd;
+
+            ifRange = pdocdata->m_ifRosebudRanges[0];
+            hr = ifDoc->get_ActiveWindow( &ifWnd );
+            hwnd = getFirstHwnd( ifDoc );
+
+            if( ifRange != NULL ) {
+                hr = ifWnd->GetPoint( &g_markLeft, &g_markTop, &g_markWidth, &g_markHeight, ifRange );
+                if( SUCCEEDED(hr) ) {
+	                g_ptMark.x = g_markLeft;
+	                g_ptMark.y = g_markTop;
+	                ScreenToClient( hwnd, &g_ptMark );
+                    retval = true;
+                }
             }
         }
     }
@@ -231,49 +274,51 @@ void CPlug::getRosebud( )
 	log_frame( "plug", u::info ) << u::endh;
 	frame << "------------------------------------------------" << u::endr;
 	HRESULT hr;
-
-    if( g_ifRosebudRange != NULL ) {
-        g_ifRosebudRange.Release();
-    }
-
+    CDocumentData* pdocdata;
 	CComPtr<word::_Document> ifDoc;
-	ifDoc = activeDoc();
 
-	CComPtr<word::Range> ifRange;
-	ifDoc->get_Content( &ifRange );
+    hr = getActiveDoc( &ifDoc );
 
-	CComPtr<word::Find> ifFind;
-	ifRange->get_Find( &ifFind );
+    if( SUCCEEDED(hr) ) {
+        pdocdata = m_docManager.getDocumentData( ifDoc );
+        pdocdata->m_ifRosebudRanges.clear();
 
-	hr = ifFind->ClearFormatting();
-	CComBSTR rosebud( "rosebud" );
-	ifFind->put_Text( rosebud );
-	CComVariant vtext( L"rosebud" );
-	CComVariant vtrue(true);
-	CComVariant vfalse(false);
-    CComVariant vnone( word::wdNone );
-    VARIANT_BOOL prop;
+	    CComPtr<word::Range> ifRange;
+	    ifDoc->get_Content( &ifRange );
 
-	hr = ifFind->Execute( 
-		&vtext,         // text
-		&vtrue,         // case
-		&vfalse,        // whole word
-        &vfalse,        // whild card
-        &vfalse,        // soundex
-        &vfalse,        // all word forms
-        &vtrue,         // forward
-        &vfalse,        // wrap
-        &vfalse,        // format
-        NULL,           // replace
-        &vnone,         // wdNone
-        &vfalse,        // match kashida
-        &vfalse,        // match diacritics
-        &vfalse,        // match alef hamza
-        &vfalse,        // match control
-        &prop );
+	    CComPtr<word::Find> ifFind;
+	    ifRange->get_Find( &ifFind );
 
-    if( prop ) {
-        g_ifRosebudRange = ifRange;
+	    hr = ifFind->ClearFormatting();
+	    CComBSTR rosebud( "rosebud" );
+	    ifFind->put_Text( rosebud );
+	    CComVariant vtext( L"rosebud" );
+	    CComVariant vtrue(true);
+	    CComVariant vfalse(false);
+        CComVariant vnone( word::wdNone );
+        VARIANT_BOOL prop;
+
+	    hr = ifFind->Execute( 
+		    &vtext,         // text
+		    &vtrue,         // case
+		    &vfalse,        // whole word
+            &vfalse,        // whild card
+            &vfalse,        // soundex
+            &vfalse,        // all word forms
+            &vtrue,         // forward
+            &vfalse,        // wrap
+            &vfalse,        // format
+            NULL,           // replace
+            &vnone,         // wdNone
+            &vfalse,        // match kashida
+            &vfalse,        // match diacritics
+            &vfalse,        // match alef hamza
+            &vfalse,        // match control
+            &prop );
+
+        if( prop ) {
+            pdocdata->m_ifRosebudRanges.push_back( ifRange );
+        }
     }
 
 }
@@ -281,21 +326,20 @@ void CPlug::getRosebud( )
 
 
 
-word::_Document* CPlug::activeDoc( )
+HRESULT CPlug::getActiveDoc( word::_Document** pifDoc )
 {
 	HRESULT hr = S_OK;
 	CComPtr<word::_Application> ifWord;
-	CComPtr<word::_Document> ifDoc;
 
     if( SUCCEEDED(hr) ) {
         hr = m_dispApplication.QueryInterface( &ifWord );
     }
 
     if( SUCCEEDED(hr) ) {
-	    hr = ifWord->get_ActiveDocument( &ifDoc );
+	    hr = ifWord->get_ActiveDocument( pifDoc );
     }
 
-	return ifDoc.Detach();
+    return hr;
 }
 
 
@@ -328,31 +372,8 @@ void CPlug::subclassDocWindows( word::_Document* ifDoc )
 
 HWND CPlug::getFirstHwnd( word::_Document* ifDoc )
 {
-	HWND hwndTop;
-	HRESULT hr;
-	long numWindows;
-    HWND hwnd;
+    CDocumentData* pdocdata;
 
-	// Verify we have only one window for the document (TODO: handle that case later)
-	CComPtr<word::Windows> ifWindows;
-	hr = ifDoc->get_Windows( &ifWindows );
-
-	hr = ifWindows->get_Count( &numWindows );
-	ATLTRACE( "There are currently %d windows for current document", numWindows );
-
-	CComPtr<word::Window> ifWindow;
-	CComVariant varNdx = ( (long)1 );
-	hr = ifWindows->Item( &varNdx, &ifWindow );
-
-	ifWindow->get_Hwnd( (long*)&hwndTop );
-
-	// Find the child window
-	hwnd = findChildWindow( hwndTop, [](HWND hwnd) -> bool {
-		wchar_t klass[200];
-        GetClassName( hwnd, klass, _countof(klass) );
-		ATLTRACE( "child window: %ls\n", klass );
-		return !wcscmp( klass, L"_WwG" );
-	});
-
-	return hwnd;
+    pdocdata = m_docManager.getDocumentData( ifDoc );
+    return pdocdata->hwnd();
 }

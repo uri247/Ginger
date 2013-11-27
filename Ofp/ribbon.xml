@@ -9,6 +9,8 @@
                     <button id="Bright" imageMso="PictureBrightnessGallery" size="large" label="CreateLayer" onAction="Bright" />
                     <button id="Control" imageMso="ControlsGallery" size="large" label="Move" onAction="Control" />
                     <button id="Fxwiz" imageMso="FunctionWizard" size="large" label="DxMark" onAction="Fxwiz" />
+                    <checkBox id="Rosebud" enabled="true" label="rosebud" onAction="CheckRosebud" />
+                    <checkBox id="Grid" enabled="true" label="grid" onAction="CheckGrid" />
                 </group>
             </tab>
         </tabs>
