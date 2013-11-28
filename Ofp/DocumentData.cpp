@@ -8,7 +8,8 @@ CDocumentData* CDocumentDataManager::getDocumentData( word::_Document* ifDoc )
     auto it = m_map.find( ifDoc );
 
     if( it == m_map.end() ) {
-        auto p = m_map.emplace( ifDoc, std::unique_ptr<CDocumentData>( new CDocumentData(ifDoc) ) );
+        //auto p = m_map.emplace( ifDoc, std::unique_ptr<CDocumentData>( new CDocumentData(ifDoc) ) );
+		auto p = m_map.emplace(ifDoc, std::make_unique<CDocumentData>(ifDoc));
         it = p.first;
     }
 
