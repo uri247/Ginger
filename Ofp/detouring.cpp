@@ -4,9 +4,6 @@
 #include "Subcls.h"
 #include "llcom.h"
 
-extern long g_markLeft, g_markTop, g_markWidth, g_markHeight;
-extern POINT g_ptMark;
-
 ID2D1RenderTarget* g_ifCurrentDrawTransaction = NULL;
 ID2D1RenderTarget* g_currentRtWithGlyph = NULL;
 
@@ -271,18 +268,26 @@ HRESULT STDMETHODCALLTYPE my_EndDraw( ID2D1RenderTarget* This, D2D1_TAG *tag1, D
         if( CPlug::inst()->IsDoingRosebud() ) {
             CPlug* pplug = CPlug::inst();
             if( pplug ) {
-                bool f = pplug->getRosebudCoord();
+                int num;
+                int i;
 
-                if( f ) {
-                    float left = (float)g_ptMark.x;
-                    float top = (float)g_ptMark.y;
-                    float right = left + g_markWidth;
-                    float bottom = top + g_markHeight;
+                num = pplug->numRosebuds( );
 
-                    This->DrawLine( D2D1::Point2F(left, top), D2D1::Point2F(right, top), ifBrushBlack );
-                    This->DrawLine( D2D1::Point2F(right, top), D2D1::Point2F(right, bottom), ifBrushBlack );
-                    This->DrawLine( D2D1::Point2F(right, bottom), D2D1::Point2F(left, bottom), ifBrushBlack );
-                    This->DrawLine( D2D1::Point2F(left, bottom), D2D1::Point2F(left, top), ifBrushBlack );
+                for( i = 0; i < num; ++i ) {
+                    int ileft, itop, iright, ibottom;
+                    bool f = pplug->enumRosebud( i, &ileft, &itop, &iright, &ibottom );
+
+                    if( f ) {
+                        float left = (float)ileft;
+                        float top = (float)itop;
+                        float right = (float)iright;
+                        float bottom = (float)ibottom;
+
+                        This->DrawLine( D2D1::Point2F( left, top ), D2D1::Point2F( right, top ), ifBrushBlack );
+                        This->DrawLine( D2D1::Point2F( right, top ), D2D1::Point2F( right, bottom ), ifBrushBlack );
+                        This->DrawLine( D2D1::Point2F( right, bottom ), D2D1::Point2F( left, bottom ), ifBrushBlack );
+                        This->DrawLine( D2D1::Point2F( left, bottom ), D2D1::Point2F( left, top ), ifBrushBlack );
+                    }
                 }
             }
 

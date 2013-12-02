@@ -71,7 +71,9 @@ public:
 
 public:
     void getRosebud();
-    bool getRosebudCoord();
+    //bool getRosebudCoord();
+    int numRosebuds( );
+    bool enumRosebud( int i, int* pleft, int* ptop, int* pright, int* pbottom );
 
     CSubclsWnd* getSubclsWnd()      { return m_pSubclsWnd; }
     bool IsDoingRosebud()           { return m_fDoRosebud; }

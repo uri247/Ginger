@@ -11,9 +11,6 @@ _ATL_FUNC_INFO CPlug::FuncInfo_NewDocument = { CC_STDCALL, VT_EMPTY, 1, { VT_BYR
 _ATL_FUNC_INFO CPlug::FuncInfo_DocumentBeforeClose = { CC_STDCALL, VT_EMPTY, 2, { VT_BYREF|VT_USERDEFINED, VT_BYREF|VT_BOOL } };
 CPlug* CPlug::l_pinst = NULL;
 
-long g_markLeft, g_markTop, g_markWidth, g_markHeight;
-POINT g_ptMark;
-
 
 
 // --------------------------------------------------------------
@@ -231,7 +228,26 @@ STDMETHODIMP CPlug::CheckGrid( IDispatch* ifRibbonCtrl, VARIANT_BOOL state )
 }
 
 
-bool CPlug::getRosebudCoord( )
+int CPlug::numRosebuds( )
+{
+    HRESULT hr;
+    CComPtr<word::_Document> ifDoc;
+    int num = 0;
+
+    hr = getActiveDoc( &ifDoc );
+
+    if( SUCCEEDED( hr ) )
+    {
+        CDocumentData* pdocdata;
+
+        pdocdata = m_docManager.getDocumentData( ifDoc );
+        num = pdocdata->m_ifRosebudRanges.size( );
+    }
+
+    return num;
+}
+
+bool CPlug::enumRosebud( int i, int* pleft, int* ptop, int* pright, int* pbottom )
 {
     HRESULT hr;
 	CComPtr<word::_Document> ifDoc;
@@ -239,30 +255,36 @@ bool CPlug::getRosebudCoord( )
 
     hr = getActiveDoc( &ifDoc );
 
-
     if( SUCCEEDED(hr) )
     {
         CDocumentData* pdocdata;
 
         pdocdata = m_docManager.getDocumentData( ifDoc );
-        if( pdocdata->m_ifRosebudRanges.size() > 0 )
+        if( i >=0 && i < pdocdata->m_ifRosebudRanges.size( ) )
         {
             HWND hwnd;
             CComPtr<word::Range> ifRange;
    	        CComPtr<word::Window> ifWnd;
 
-            ifRange = pdocdata->m_ifRosebudRanges[0];
+            ifRange = pdocdata->m_ifRosebudRanges[i];
+            ATLASSERT( ifRange );
             hr = ifDoc->get_ActiveWindow( &ifWnd );
-            hwnd = getFirstHwnd( ifDoc );
+            hwnd = pdocdata->hwnd( );
 
-            if( ifRange != NULL ) {
-                hr = ifWnd->GetPoint( &g_markLeft, &g_markTop, &g_markWidth, &g_markHeight, ifRange );
-                if( SUCCEEDED(hr) ) {
-	                g_ptMark.x = g_markLeft;
-	                g_ptMark.y = g_markTop;
-	                ScreenToClient( hwnd, &g_ptMark );
-                    retval = true;
-                }
+            long left, top, right, bottom, width, height;
+
+            hr = ifWnd->GetPoint( &left, &top, &width, &height, ifRange );
+            if( SUCCEEDED(hr) ) {
+                POINT pt;
+                pt.x = left;
+                pt.y = top;
+                ScreenToClient( hwnd, &pt );
+
+                *pleft = pt.x;
+                *ptop = pt.y;
+                *pright = *pleft + width;
+                *pbottom = *ptop + height;
+                retval = true;
             }
         }
     }
@@ -276,48 +298,67 @@ void CPlug::getRosebud( )
 	HRESULT hr;
     CDocumentData* pdocdata;
 	CComPtr<word::_Document> ifDoc;
+    long start, end;
 
     hr = getActiveDoc( &ifDoc );
 
-    if( SUCCEEDED(hr) ) {
+    // find the start and end of document
+    if( SUCCEEDED( hr ) ) {
+        CComPtr<word::Range> ifRange;
+        ifDoc->get_Content( &ifRange );
+        hr = ifRange->get_Start( &start );
+        hr = ifRange->get_End( &end );
+    }
+
+    if( SUCCEEDED( hr ) ) {
         pdocdata = m_docManager.getDocumentData( ifDoc );
-        pdocdata->m_ifRosebudRanges.clear();
+        pdocdata->m_ifRosebudRanges.clear( );
 
-	    CComPtr<word::Range> ifRange;
-	    ifDoc->get_Content( &ifRange );
+        while( SUCCEEDED( hr ) )
+        {
+            // creating a range starting from current start until end of document
+            CComPtr<word::Range> ifRange;
+            CComVariant vStart( start );
+            CComVariant vEnd( end );
+            ifDoc->Range( &vStart, &vEnd, &ifRange );
 
-	    CComPtr<word::Find> ifFind;
-	    ifRange->get_Find( &ifFind );
+            // get a find interface in the range
+            CComPtr<word::Find> ifFind;
+            ifRange->get_Find( &ifFind );
+            hr = ifFind->ClearFormatting( );
+            CComBSTR rosebud( "rosebud" );
+            ifFind->put_Text( rosebud );
+            CComVariant vtext( L"rosebud" );
+            CComVariant vtrue( true );
+            CComVariant vfalse( false );
+            CComVariant vnone( word::wdNone );
+            VARIANT_BOOL prop;
 
-	    hr = ifFind->ClearFormatting();
-	    CComBSTR rosebud( "rosebud" );
-	    ifFind->put_Text( rosebud );
-	    CComVariant vtext( L"rosebud" );
-	    CComVariant vtrue(true);
-	    CComVariant vfalse(false);
-        CComVariant vnone( word::wdNone );
-        VARIANT_BOOL prop;
+            hr = ifFind->Execute(
+                &vtext,         // text
+                &vtrue,         // case
+                &vfalse,        // whole word
+                &vfalse,        // whild card
+                &vfalse,        // soundex
+                &vfalse,        // all word forms
+                &vtrue,         // forward
+                &vfalse,        // wrap
+                &vfalse,        // format
+                NULL,           // replace
+                &vnone,         // wdNone
+                &vfalse,        // match kashida
+                &vfalse,        // match diacritics
+                &vfalse,        // match alef hamza
+                &vfalse,        // match control
+                &prop );
 
-	    hr = ifFind->Execute( 
-		    &vtext,         // text
-		    &vtrue,         // case
-		    &vfalse,        // whole word
-            &vfalse,        // whild card
-            &vfalse,        // soundex
-            &vfalse,        // all word forms
-            &vtrue,         // forward
-            &vfalse,        // wrap
-            &vfalse,        // format
-            NULL,           // replace
-            &vnone,         // wdNone
-            &vfalse,        // match kashida
-            &vfalse,        // match diacritics
-            &vfalse,        // match alef hamza
-            &vfalse,        // match control
-            &prop );
-
-        if( prop ) {
-            pdocdata->m_ifRosebudRanges.push_back( ifRange );
+            if( prop ) {
+                pdocdata->m_ifRosebudRanges.push_back( ifRange );
+                ifRange->get_End( &start );
+            }
+            else {
+                break;
+            }
         }
     }
 
