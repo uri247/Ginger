@@ -260,7 +260,7 @@ bool CPlug::enumRosebud( int i, int* pleft, int* ptop, int* pright, int* pbottom
         CDocumentData* pdocdata;
 
         pdocdata = m_docManager.getDocumentData( ifDoc );
-        if( i >=0 && i < pdocdata->m_ifRosebudRanges.size( ) )
+        if( i >=0 && i < (int)pdocdata->m_ifRosebudRanges.size( ) )
         {
             HWND hwnd;
             CComPtr<word::Range> ifRange;
@@ -271,7 +271,7 @@ bool CPlug::enumRosebud( int i, int* pleft, int* ptop, int* pright, int* pbottom
             hr = ifDoc->get_ActiveWindow( &ifWnd );
             hwnd = pdocdata->hwnd( );
 
-            long left, top, right, bottom, width, height;
+            long left, top, width, height;
 
             hr = ifWnd->GetPoint( &left, &top, &width, &height, ifRange );
             if( SUCCEEDED(hr) ) {

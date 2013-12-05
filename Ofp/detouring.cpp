@@ -231,11 +231,13 @@ HRESULT STDMETHODCALLTYPE my_EndDraw( ID2D1RenderTarget* This, D2D1_TAG *tag1, D
 	    CComPtr<ID2D1SolidColorBrush> ifBrushRed;
 	    CComPtr<ID2D1SolidColorBrush> ifBrushGreen;
 	    CComPtr<ID2D1SolidColorBrush> ifBrushBlue;
+        CComPtr<ID2D1SolidColorBrush> ifBrushOrange;
 
 	    hr = This->CreateSolidColorBrush( D2D1::ColorF( D2D1::ColorF::Black ), &ifBrushBlack );
 	    hr = This->CreateSolidColorBrush( D2D1::ColorF( D2D1::ColorF::Red ), &ifBrushRed );
 	    hr = This->CreateSolidColorBrush( D2D1::ColorF( D2D1::ColorF::Green ), &ifBrushGreen );
 	    hr = This->CreateSolidColorBrush( D2D1::ColorF( D2D1::ColorF::Blue ), &ifBrushBlue );
+        hr = This->CreateSolidColorBrush( D2D1::ColorF( D2D1::ColorF::OrangeRed, 0.5f ), &ifBrushOrange );
 
 	    D2D1_RECT_F rect;
 	    rect.left = 0;
@@ -283,10 +285,14 @@ HRESULT STDMETHODCALLTYPE my_EndDraw( ID2D1RenderTarget* This, D2D1_TAG *tag1, D
                         float right = (float)iright;
                         float bottom = (float)ibottom;
 
-                        This->DrawLine( D2D1::Point2F( left, top ), D2D1::Point2F( right, top ), ifBrushBlack );
-                        This->DrawLine( D2D1::Point2F( right, top ), D2D1::Point2F( right, bottom ), ifBrushBlack );
-                        This->DrawLine( D2D1::Point2F( right, bottom ), D2D1::Point2F( left, bottom ), ifBrushBlack );
-                        This->DrawLine( D2D1::Point2F( left, bottom ), D2D1::Point2F( left, top ), ifBrushBlack );
+                        //This->DrawLine( D2D1::Point2F( left, top ), D2D1::Point2F( right, top ), ifBrushBlack );
+                        //This->DrawLine( D2D1::Point2F( right, top ), D2D1::Point2F( right, bottom ), ifBrushBlack );
+                        //This->DrawLine( D2D1::Point2F( right, bottom ), D2D1::Point2F( left, bottom ), ifBrushBlack );
+                        //This->DrawLine( D2D1::Point2F( left, bottom ), D2D1::Point2F( left, top ), ifBrushBlack );
+
+                        D2D1_RECT_F rc = D2D1::RectF( left, top, right, bottom );
+                        This->FillRectangle( &rc, ifBrushOrange );
+
                     }
                 }
             }
