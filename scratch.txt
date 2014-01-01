@@ -1,0 +1,31 @@
+
+void resolveAddresses( )
+{
+    // Simple addresses
+    stub_GetDC = ::GetDC;
+    stub_ReleaseDC = ::ReleaseDC;
+    stub_BitBlt = BitBlt;
+    stub_UpdateLayeredWindow = UpdateLayeredWindow;
+    stub_DispatchMessage = DispatchMessage;
+    stub_CreateDXGIFactory = CreateDXGIFactory;
+    stub_CreateDXGIFactory1 = CreateDXGIFactory1;
+
+    // Private addresses in dxgi.dll
+    stub_CreateSwapChain = static_cast<type_CreateSwapChain>(DetourFindFunction( "dxgi.dll", symbol_CreateSwapChain ));
+    stub_CreateSwapChainForHwnd = static_cast<type_CreateSwapChainForHwnd>(DetourFindFunction( "dxgi.dll", symbol_CreateSwapChainForHwnd ));
+    stub_Present = static_cast<type_Present>(DetourFindFunction( "dxgi.dll", symbol_Present ));
+    stub_Present1 = static_cast<type_Present1>(DetourFindFunction( "dxgi.dll", symbol_Present1 ));
+
+    // Private addresses in d2d1.dll
+    stub_CreateWicBitmapRenderTarget = static_cast<type_CreateWicBitmapRenderTarget>(DetourFindFunction( "d2d1.dll", symbol_CreateWicBitmapRenderTarget ));
+    stub_BeginDraw = static_cast<type_BeginDraw>(DetourFindFunction( "d2d1.dll", symbol_BeginDraw ));
+    stub_EndDraw = static_cast<type_EndDraw>(DetourFindFunction( "d2d1.dll", symbol_EndDraw ));
+    stub_DrawGlyphRun = static_cast<type_DrawGlyphRun>(DetourFindFunction( "d2d1.dll", symbol_DrawGlyphRun ));
+    stub_CreateBitmapFromWicBitmap = static_cast<type_CreateBitmapFromWicBitmap>(DetourFindFunction( "d2d1.dll", symbol_CreateBitmapFromWicBitmap ));
+    stub_DrawBitmap = static_cast<type_DrawBitmap>(DetourFindFunction( "d2d1.dll", symbol_DrawBitmap ));
+}
+
+
+
+
+

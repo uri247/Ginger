@@ -8,65 +8,25 @@ ID2D1RenderTarget* g_ifCurrentDrawTransaction = NULL;
 ID2D1RenderTarget* g_currentRtWithGlyph = NULL;
 
 
-HDC (WINAPI* stub_GetDC)( HWND ) = ::GetDC;
-int (WINAPI* stub_ReleaseDC)( HWND, HDC ) = ::ReleaseDC;
-BOOL (WINAPI* stub_BitBlt)( HDC, int, int, int, int, HDC, int, int, DWORD ) = ::BitBlt;
-BOOL (WINAPI* stub_UpdateLayeredWindow)( HWND, HDC, POINT*, SIZE*, HDC, POINT*, COLORREF, BLENDFUNCTION*, DWORD ) = ::UpdateLayeredWindow;
-LRESULT (WINAPI* stub_DispatchMessage)( const MSG* ) = ::DispatchMessage;
-HRESULT (WINAPI* stub_CreateDXGIFactory1)( REFIID riid, void **ppFactory ) = ::CreateDXGIFactory1;
-HRESULT (WINAPI* stub_CreateDXGIFactory)( REFIID riid, void **ppFactory ) = ::CreateDXGIFactory;
+type_GetDC stub_GetDC;
+type_ReleaseDC stub_ReleaseDC;
+type_BitBlt stub_BitBlt;
+type_UpdateLayeredWindow stub_UpdateLayeredWindow;
+type_DispatchMessage stub_DispatchMessage;
+type_CreateDXGIFactory stub_CreateDXGIFactory;
+type_CreateDXGIFactory1 stub_CreateDXGIFactory1;
 
-// "CDXGIFactory::CreateSwapChainImpl"
 type_CreateSwapChain stub_CreateSwapChain;
 type_CreateSwapChainForHwnd stub_CreateSwapChainForHwnd;
-type_Present stub_Present_1;
-type_Present stub_Present_2;
+type_Present stub_Present;
 type_Present1 stub_Present1;
-type_BeginDraw stub_BeginDraw;
-type_EndDraw stub_EndDraw_1;
-type_EndDraw stub_EndDraw_2;
-type_EndDraw stub_EndDraw_3;
-type_EndDraw stub_EndDraw_4;
-type_EndDraw stub_EndDraw_5;
+
 type_CreateWicBitmapRenderTarget stub_CreateWicBitmapRenderTarget;
+type_BeginDraw stub_BeginDraw;
+type_EndDraw stub_EndDraw;
 type_DrawGlyphRun stub_DrawGlyphRun;
 type_CreateBitmapFromWicBitmap stub_CreateBitmapFromWicBitmap;
 type_DrawBitmap stub_DrawBitmap;
-
-struct tr_Present_1 {
-	static char const* const symbol() { return symbol_Present_1; }
-	static type_Present& stub() { return stub_Present_1; }
-};
-struct tr_Present_2 {
-	static char const* const symbol() { return symbol_Present_2; }
-	static type_Present& stub() { return stub_Present_2; }
-};
-
-struct tr_EndDraw_1 {
-	static char const* const symbol() { return symbol_EndDraw_1; }
-	static type_EndDraw& stub() { return stub_EndDraw_1; }
-	static char const* const name() { return "EndDraw_1"; }
-};
-struct tr_EndDraw_2 {
-	static char const* const symbol() { return symbol_EndDraw_2; }
-	static type_EndDraw& stub() { return stub_EndDraw_2; }
-	static char const* const name() { return "EndDraw_2"; }
-};
-struct tr_EndDraw_3 {
-	static char const* const symbol() { return symbol_EndDraw_3; }
-	static type_EndDraw& stub() { return stub_EndDraw_3; }
-	static char const* const name() { return "EndDraw_3"; }
-};
-struct tr_EndDraw_4 {
-	static char const* const symbol() { return symbol_EndDraw_4; }
-	static type_EndDraw& stub() { return stub_EndDraw_4; }
-	static char const* const name() { return "EndDraw_4"; }
-};
-struct tr_EndDraw_5 {
-	static char const* const symbol() { return symbol_EndDraw_5; }
-	static type_EndDraw& stub() { return stub_EndDraw_5; }
-	static char const* const name() { return "EndDraw_5"; }
-};
 
 
 
@@ -99,9 +59,7 @@ int WINAPI my_BitBlt( HDC hdc, int x, int y, int cx, int cy, HDC hdcSrc, int x1,
 
 	frame << log_ret(result);
 	return result;
-
 }
-
 
 
 BOOL WINAPI my_UpdateLayeredWindow( HWND hwnd, HDC hdcDst, POINT *pptDst, SIZE *psize, HDC hdcSrc, POINT *pptSrc, COLORREF crKey, BLENDFUNCTION *pblend, DWORD dwFlags )
@@ -169,7 +127,7 @@ HRESULT STDMETHODCALLTYPE my_CreateSwapChainForHwnd( IDXGIFactory2* This, IUnkno
 	return result;
 }
 
-template< typename Tr >
+
 HRESULT STDMETHODCALLTYPE my_Present( IDXGISwapChain* This, UINT SyncInterval, UINT Flags )
 {
 	log_frame( "dxgi", u::info ) << log_var(This) << u::endh;
@@ -183,7 +141,7 @@ HRESULT STDMETHODCALLTYPE my_Present( IDXGISwapChain* This, UINT SyncInterval, U
 	hr = This->GetDevice( __uuidof(IDXGIDevice), (void**)&dxgiDevice );
 	frame << log_var(dxgiDevice);
 
-	HRESULT result = Tr::stub()(This, SyncInterval, Flags );
+	HRESULT result = stub_Present(This, SyncInterval, Flags );
 	frame << log_ret(result);
 	return result;
 }
@@ -219,11 +177,10 @@ void STDMETHODCALLTYPE my_BeginDraw( ID2D1RenderTarget* This )
 }
 
 
-template< typename Tr >
 HRESULT STDMETHODCALLTYPE my_EndDraw( ID2D1RenderTarget* This, D2D1_TAG *tag1, D2D1_TAG *tag2 )
 {
 	HRESULT hr;
-	log_frame( "d2d1", u::info ) << log_var(Tr::name()) << log_var(This) << u::endh;
+	log_frame( "d2d1", u::info ) << log_var(This) << u::endh;
 
     if( g_currentRtWithGlyph == This ) {
 
@@ -301,7 +258,7 @@ HRESULT STDMETHODCALLTYPE my_EndDraw( ID2D1RenderTarget* This, D2D1_TAG *tag1, D
         g_currentRtWithGlyph = NULL;
     }
 
-	HRESULT result = Tr::stub()(This, tag1, tag2 );
+	HRESULT result = stub_EndDraw(This, tag1, tag2 );
 	frame << log_ret(result);
 	return result;
 }
@@ -378,75 +335,57 @@ void STDMETHODCALLTYPE my_DrawBitmap( ID2D1RenderTarget* This, ID2D1Bitmap* bitm
 }
 
 // ----------------------------------------
-#define hook(fn)      { &(void*&)stub_##fn, my_##fn }
 
-struct HookRecord {
-	void** ptr;
-	void* detour;
-} g_hooks[] = {
-	//hook(GetDC),
-	//hook(ReleaseDC),
-	//hook(BitBlt),
-	//hook(UpdateLayeredWindow),
-	//hook(DispatchMessage),
-	//hook(CreateDXGIFactory1),
-	//hook(CreateDXGIFactory),
-	hook(CreateSwapChain),
-	hook(CreateSwapChainForHwnd),
-	//{ &(void*&)stub_Present_1, (type_Present)my_Present<tr_Present_1> },
-	//{ &(void*&)stub_Present_2, (type_Present)my_Present<tr_Present_2> },
-	hook(Present1),
-	hook(BeginDraw),
-	{ &(void*&)stub_EndDraw_1, (type_EndDraw)my_EndDraw<tr_EndDraw_1> },
-	{ &(void*&)stub_EndDraw_2, (type_EndDraw)my_EndDraw<tr_EndDraw_2> },
-	{ &(void*&)stub_EndDraw_3, (type_EndDraw)my_EndDraw<tr_EndDraw_3> },
-	{ &(void*&)stub_EndDraw_4, (type_EndDraw)my_EndDraw<tr_EndDraw_4> },
-	{ &(void*&)stub_EndDraw_5, (type_EndDraw)my_EndDraw<tr_EndDraw_5> },
-	{ &(void*&)stub_CreateWicBitmapRenderTarget, my_CreateWicBitmapRenderTarget },
-	{ &(void*&)stub_DrawGlyphRun, my_DrawGlyphRun },
-	{ &(void*&)stub_CreateBitmapFromWicBitmap, my_CreateBitmapFromWicBitmap },
-	{ &(void*&)stub_DrawBitmap, my_DrawBitmap },
+struct Hook
+{
+    bool m_publicAddress;
+    void* m_targetAddress;
+    const char* m_targetDll;
+    const char* m_targetSymbol;
+    void** m_stub;
+    void* m_myDetour;
+
+public:
+    Hook( void* targetAddress, void** stub, void* detour ) 
+        :m_publicAddress( true ), m_targetAddress( targetAddress ), m_targetDll( NULL ), m_targetSymbol( NULL ), m_stub( stub ), m_myDetour( detour )
+    { }
+
+    Hook( const char* targetDll, const char* targetSymbol, void** stub, void* detour )
+        :m_publicAddress( false ), m_targetAddress( NULL ), m_targetDll( targetDll ), m_targetSymbol( targetSymbol ), m_stub( stub ), m_myDetour( detour )
+    { }
+};
+
+Hook g_hooks[] = {
+    Hook( ::GetDC, &(void*&)stub_GetDC, my_GetDC ),
+    Hook( ::ReleaseDC, &(void*&)stub_ReleaseDC, my_ReleaseDC ),
+    Hook( ::BitBlt, &(void*&)stub_BitBlt, my_BitBlt ),
+    Hook( ::UpdateLayeredWindow, &(void*&)stub_UpdateLayeredWindow, my_UpdateLayeredWindow ),
+    Hook( ::DispatchMessage, &(void*&)stub_DispatchMessage, my_DispatchMessage ),
+    Hook( ::CreateDXGIFactory, &(void*&)stub_CreateDXGIFactory, my_CreateDXGIFactory ),
+
+    Hook( "dxgi.dll", symbol_CreateSwapChain, &(void*&)stub_CreateSwapChain, my_CreateSwapChain ),
+    Hook( "dxgi.dll", symbol_CreateSwapChainForHwnd, &(void*&)stub_CreateSwapChainForHwnd, my_CreateSwapChainForHwnd ),
+    Hook( "dxgi.dll", symbol_Present, &(void*&)stub_Present, my_Present ),
+    Hook( "dxgi.dll", symbol_Present1, &(void*&)stub_Present1, my_Present1 ),
+
+    Hook( "d2d1.dll", symbol_CreateWicBitmapRenderTarget, &(void*&)stub_CreateWicBitmapRenderTarget, my_CreateWicBitmapRenderTarget ),
+    Hook( "d2d1.dll", symbol_BeginDraw, &(void*&)stub_BeginDraw, my_BeginDraw ),
+    Hook( "d2d1.dll", symbol_EndDraw, &(void*&)stub_EndDraw, my_EndDraw ),
+    Hook( "d2d1.dll", symbol_DrawGlyphRun, &(void*&)stub_DrawGlyphRun, my_DrawGlyphRun ),
+    Hook( "d2d1.dll", symbol_CreateBitmapFromWicBitmap, &(void*&)stub_CreateBitmapFromWicBitmap, my_CreateBitmapFromWicBitmap ),
+    Hook( "d2d1.dll", symbol_DrawBitmap, &(void*&)stub_DrawBitmap, my_DrawBitmap )
 };
 
 void resolveAddresses()
 {
-	/* use this method as an alternative to dbghelp. For now we are good without it.
-	HRESULT hr = S_OK;
-	CComPtr<IDXGIFactory> dxgiFactory;
-	CComPtr<IDXGIFactory2> dxgiFactory2;
-
-	hr = CreateDXGIFactory( __uuidof(IDXGIFactory), (void**)&dxgiFactory );
-	if( SUCCEEDED(hr) ) {
-		stub_CreateSwapChain = resolve_CreateSwapChain( dxgiFactory );
-	}
-
-	hr = dxgiFactory.QueryInterface( &dxgiFactory2 );
-	if( SUCCEEDED(hr) ) {
-		stub_CreateSwapChainForHwnd = resolve_CreateSwapChainForHwnd( dxgiFactory2 );
-	}
-	*/
-
-	stub_CreateSwapChain = static_cast<type_CreateSwapChain>( DetourFindFunction( "dxgi.dll", symbol_CreateSwapChain ) );
-	stub_CreateSwapChainForHwnd = static_cast<type_CreateSwapChainForHwnd>(	DetourFindFunction( "dxgi.dll", symbol_CreateSwapChainForHwnd ) );
-
-	stub_Present_1 = static_cast<type_Present>( DetourFindFunction( "dxgi.dll", symbol_Present_1 ) );
-	stub_Present_2 = static_cast<type_Present>( DetourFindFunction( "dxgi.dll", symbol_Present_2 ) );
-
-	stub_Present1 = static_cast<type_Present1>( DetourFindFunction( "dxgi.dll", symbol_Present1 ) );
-
-	stub_BeginDraw = static_cast<type_BeginDraw>( DetourFindFunction( "d2d1.dll", symbol_BeginDraw ) );
-
-	stub_EndDraw_1 = static_cast<type_EndDraw>( DetourFindFunction( "d2d1.dll", symbol_EndDraw_1 ) );
-	stub_EndDraw_2 = static_cast<type_EndDraw>( DetourFindFunction( "d2d1.dll", symbol_EndDraw_2 ) );
-	stub_EndDraw_3 = static_cast<type_EndDraw>( DetourFindFunction( "d2d1.dll", symbol_EndDraw_3 ) );
-	stub_EndDraw_4 = static_cast<type_EndDraw>( DetourFindFunction( "d2d1.dll", symbol_EndDraw_4 ) );
-	stub_EndDraw_5 = static_cast<type_EndDraw>( DetourFindFunction( "d2d1.dll", symbol_EndDraw_5 ) );
-
-	stub_CreateWicBitmapRenderTarget = static_cast<type_CreateWicBitmapRenderTarget>( DetourFindFunction( "d2d1.dll", symbol_CreateWicBitmapRenderTarget ) );
-	stub_DrawGlyphRun = static_cast<type_DrawGlyphRun>( DetourFindFunction( "d2d1.dll", symbol_DrawGlyphRun ) );
-	stub_CreateBitmapFromWicBitmap = static_cast<type_CreateBitmapFromWicBitmap>( DetourFindFunction( "d2d1.dll", symbol_CreateBitmapFromWicBitmap ) );
-	stub_DrawBitmap = static_cast<type_DrawBitmap>( DetourFindFunction( "d2d1.dll", symbol_DrawBitmap ) );
+    for( auto& hook : g_hooks )
+    {
+        if( !hook.m_publicAddress ) {
+            *hook.m_stub = DetourFindFunction( hook.m_targetDll, hook.m_targetSymbol );
+        }
+    }
 }
+
 
 void attachDetours( )
 {
@@ -456,11 +395,14 @@ void attachDetours( )
 
     DetourTransactionBegin( );
     DetourUpdateThread( GetCurrentThread() );
-	for( HookRecord& h : g_hooks ) {
-		if( *h.ptr ) {
-		    result1 = DetourAttach( h.ptr, h.detour );
-		}
-	};
+
+    for( auto& hook : g_hooks )
+    {
+        if( *hook.m_stub ) {
+            result1 = DetourAttach( hook.m_stub, hook.m_myDetour );
+        }
+    }
+
     result = DetourTransactionCommit( );
 }
 
@@ -469,10 +411,13 @@ void detachDetours( )
 {
     DetourTransactionBegin( );
     DetourUpdateThread( GetCurrentThread() );
-	for( HookRecord& h : g_hooks ) {
-		if( *h.ptr ) {
-	        DetourDetach( h.ptr, h.detour );
-		}
-	}
+
+    for( auto& hook : g_hooks )
+    {
+        if( *hook.m_stub ) {
+            DetourDetach( hook.m_stub, hook.m_myDetour );
+        }
+    }
+
     DetourTransactionCommit( );
 }
