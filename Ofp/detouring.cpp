@@ -381,7 +381,8 @@ void resolveAddresses()
     for( auto& hook : g_hooks )
     {
         if( !hook.m_publicAddress ) {
-            *hook.m_stub = DetourFindFunction( hook.m_targetDll, hook.m_targetSymbol );
+            void* addr = DetourFindFunction( hook.m_targetDll, hook.m_targetSymbol );
+            hook.m_targetAddress = addr;
         }
     }
 }
@@ -398,6 +399,8 @@ void attachDetours( )
 
     for( auto& hook : g_hooks )
     {
+        *hook.m_stub = hook.m_targetAddress;
+
         if( *hook.m_stub ) {
             result1 = DetourAttach( hook.m_stub, hook.m_myDetour );
         }

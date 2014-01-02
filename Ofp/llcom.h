@@ -34,8 +34,14 @@ typedef void (STDMETHODCALLTYPE* type_DrawBitmap)(ID2D1RenderTarget* This, ID2D1
 // DXGI symbols
 char const* const symbol_CreateSwapChain = "?CreateSwapChain@CDXGIFactory@@UAGJPAUIUnknown@@PAUDXGI_SWAP_CHAIN_DESC@@PAPAUIDXGISwapChain@@@Z";
 char const* const symbol_CreateSwapChainForHwnd = "?CreateSwapChainForHwnd@CDXGIFactory@@UAGJPAUIUnknown@@PAUHWND__@@PBUDXGI_SWAP_CHAIN_DESC1@@PBUDXGI_SWAP_CHAIN_FULLSCREEN_DESC@@PAUIDXGIOutput@@PAPAUIDXGISwapChain1@@@Z";
-char const* const symbol_Present = "?Present@?$CDXGISwapChainBase@UIDXGISwapChain@@@@UAGJII@Z";
+char const* const symbol_Present = "?Present@CDXGISwapChain@@UAGJII@Z";
 char const* const symbol_Present1 = "?Present1@?IIDXGISwapChain1@CDXGISwapChain@@UAGJIIPBUDXGI_PRESENT_PARAMETERS@@@Z";
+
+
+// There is also:
+// ?PresentImpl@CDXGISwapChain@@QAEJW4EPresentEntryPoint@@IIIPBUtagRECT@@IPBUDXGI_SCROLL_RECT@@PAUIDXGIResource@@@Z
+// public: long __thiscall CDXGISwapChain::PresentImpl( enum  EPresentEntryPoint, unsigned int, unsigned int, unsigned int, struct tagRECT const *, unsigned int, struct DXGI_SCROLL_RECT const *, struct IDXGIResource * )
+
 
 // D2D1 symbols
 char const* const symbol_CreateWicBitmapRenderTarget = "?CreateWicBitmapRenderTarget@D2DFactory@@UAGJPAUIWICBitmap@@PBUD2D1_RENDER_TARGET_PROPERTIES@@PAPAUID2D1RenderTarget@@@Z";
@@ -44,7 +50,7 @@ char const* const symbol_BeginDraw = "?BeginDraw@?$D2DDeviceContextBase@UID2D1DC
 char const* const symbol_EndDraw = "?EndDraw@?$D2DDeviceContextBase@UID2D1BitmapRenderTarget@@U1@UID2D1DeviceContext@@@@UAGJPA_K0@Z";
 char const* const symbol_DrawGlyphRun = "?DrawGlyphRun@?$D2DDeviceContextBase@UID2D1BitmapRenderTarget@@U1@UID2D1DeviceContext@@@@UAGXUD2D_POINT_2F@@PBUDWRITE_GLYPH_RUN@@PAUID2D1Brush@@W4DWRITE_MEASURING_MODE@@@Z";
 char const* const symbol_CreateBitmapFromWicBitmap = "?CreateBitmapFromWicBitmap@?$D2DRenderTargetBase@UID2D1RenderTarget@@@@UAGJPAUIWICBitmapSource@@PBUD2D1_BITMAP_PROPERTIES@@PAPAUID2D1Bitmap@@@Z";
-char const* const symbol_DrawBitmap = "?DrawBitmap@?$D2DRenderTargetBase@UID2D1RenderTarget@@@@UAGXPAUID2D1Bitmap@@PBUD2D_RECT_F@@MW4D2D1_BITMAP_INTERPOLATION_MODE@@1@Z";
+char const* const symbol_DrawBitmap = "?DrawBitmap@?$D2DDeviceContextBase@UID2D1DeviceContext@@U1@Vnull_type@@@@UAGXPAUID2D1Bitmap@@PBUD2D_RECT_F@@MW4D2D1_BITMAP_INTERPOLATION_MODE@@1@Z";
 
 
 #ifdef __cplusplus
